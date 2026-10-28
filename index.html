@@ -6603,6 +6603,15 @@
     SCENARIOS.forEach(e=>demoSignatures.add(demoSignature(e)));
     refreshGuidance();
 
+    // The examples are there to see the service filled while it is being built, so they come only where it runs
+    // locally (localhost, 127.0.0.1, a file opened from disk). On the public site a newcomer starts empty, and the
+    // examples an earlier version already put in a visitor's browser are taken out; their own разборы stay.
+    if(!['localhost','127.0.0.1','[::1]',''].includes(location.hostname)){
+      const all=getHistory(),own=all.filter(e=>!isDemoEntry(e));
+      if(own.length!==all.length){ safeSetItem(STORAGE_KEY, JSON.stringify(own)); updateStorageBanner(); }
+      return;
+    }
+
     // Bump this whenever SCENARIOS or TOPIC_TARGET_COUNTS below change, so returning
     // browsers get the updated demo set reseeded — without touching any разборы the
     // person actually wrote themselves (those are kept and merged back in below).
