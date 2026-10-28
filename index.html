@@ -2110,11 +2110,13 @@
   #patPeriodList{position:absolute;top:calc(100% + 8px);left:0;min-width:230px;padding:6px;background:#fff;color:#222;border:1px solid #ddd;border-radius:14px;z-index:50;}
   #patPeriodList[hidden]{display:none;}#patPeriodList button{display:block;width:100%;text-align:left;padding:11px 12px;border:0;border-radius:8px;background:#fff;color:#222;font:400 14px var(--font-body);cursor:pointer;}#patPeriodList button:hover,#patPeriodList button:focus-visible{background:#f2f2f2;outline:none;}#patPeriodList [aria-selected="true"]{font-weight:600;background:#f6f6f6;}
   #patMeta{position:relative;z-index:12;}
-  /* the tip of a map cell looks like the tip of a distortion chip: the same card, width, padding and type; the chip tips sit on the scaled board,
-     this one does not, so its sizes follow the board's scale (--pb-k, set by patBoardFit) */
+  /* the tip of a map cell looks like the tip of a distortion chip: the same card, width, padding and type */
   #patInstantTip>span{display:block;}
-  #patInstantTip .pt-tip-cap{margin:0 0 calc(5px * var(--pb-k,1));font:400 calc(11px * var(--pb-k,1))/1.4 var(--font-body);letter-spacing:.065em;text-transform:uppercase;color:#6e6e6e;}
-  #patInstantTip{position:fixed;width:max-content;max-width:min(calc(340px * var(--pb-k,1)),calc(100vw - 16px));padding:calc(20px * var(--pb-k,1)) calc(24px * var(--pb-k,1));border:0;border-radius:calc(16px * var(--pb-k,1));background:#fff;box-shadow:0 2px 6px rgba(64,52,128,.10),0 14px 36px rgba(64,52,128,.20)!important;color:#111;font:400 calc(15px * var(--pb-k,1))/1.5 var(--font-body);z-index:9999;pointer-events:none;}
+  #patInstantTip .pt-tip-cap{margin:0 0 4px;font:400 10px/1.4 var(--font-body);letter-spacing:.065em;text-transform:uppercase;color:#6e6e6e;}
+  #patInstantTip{position:fixed;width:max-content;max-width:min(300px,calc(100vw - 16px));padding:14px 18px;border:0;border-radius:14px;background:#fff;box-shadow:none!important;filter:drop-shadow(0 2px 6px rgba(64,52,128,.10)) drop-shadow(0 14px 36px rgba(64,52,128,.20))!important;color:#111;font:400 13px/1.6 var(--font-body);z-index:9999;pointer-events:none;}
+  /* the same triangle as on the distortion's tip, pointing down at its cell (up when the tip had to go under it) */
+  #patInstantTip::before{content:"";position:absolute;left:var(--arrow-x,50%);bottom:-7px;width:14px;height:8px;margin-left:-7px;background:#fff;clip-path:polygon(0 0,100% 0,50% 100%);}
+  #patInstantTip.is-below::before{top:-7px;bottom:auto;clip-path:polygon(50% 0,100% 100%,0 100%);}
   #patterns [data-card="kpi"] h2{padding-right:90px;}
   #patterns [data-card="kpi"] .pat-map-caption{position:absolute;top:24px;right:20px;font-size:10px;line-height:1.3;text-align:right;}
   .pat-observation,.pat-topic-insight{font:400 12px/1.5 var(--font-body);margin:0;color:#666;}.pat-topic-insight{flex:none;}
@@ -2670,94 +2672,71 @@
   }
   @media(max-height:660px){.pt-dsub{display:none;}.pt-cap.pt-gap{margin-top:12px;}}
 
-  /* ===== Patterns as ONE board: a file whose tab carries the period filter; the findings lie on it as flat white sheets, a tag and a paper ===== */
-  body[data-view="patterns"] #patterns.has-board #patMeta{position:absolute;left:0;top:0;z-index:12;margin:0;min-height:0;height:40px;width:max-content;transform-origin:0 0;}
-  body[data-view="patterns"] #patterns.has-board #patMeta .pat-toolbar-actions{display:none;}
-  body[data-view="patterns"] #patterns.has-board .pat-period::after{display:none;}
-  body[data-view="patterns"] #patterns.has-board #patPeriod{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;font:400 16px/1 var(--font-body)!important;color:#111;}
-  body[data-view="patterns"] #patterns.has-board #patPeriod:is(:hover,:focus-visible,[aria-expanded="true"]){background:none!important;box-shadow:none!important;}
-  body[data-view="patterns"] #patterns.has-board #patPeriod::after{content:"";width:10px;height:6px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23111' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/contain;transition:transform .15s ease;}
-  body[data-view="patterns"] #patterns.has-board #patPeriod[aria-expanded="true"]::after{transform:rotate(180deg);}
-  body[data-view="patterns"] #patterns.has-board #patGrid.pat-grid{display:block;position:relative;overflow:visible;gap:0;}
-  .pb-stage{position:absolute;left:0;top:0;width:1216px;height:698px;transform-origin:0 0;color:#111;font-family:var(--font-body);}
-  .pb-file{position:absolute;left:0;top:0;overflow:visible;pointer-events:none;}
-  .pb-file path{fill:none;stroke:#222;stroke-width:1;stroke-linejoin:round;}
-  .pb-item{position:absolute;}
-  /* one set of type: main text regular 15px black, secondary 13px grey, small caps 11px grey; numbers in Nunito */
-  .pb-text{margin:0;font:400 15px/1.5 var(--font-body);color:#111;}
-  /* the captions are set like the captions of an open entry (#flipStage .reading-label: .065em, capitals), 11px and a darker grey, so they do not get lost */
-  .pb-cap{margin:0;font:400 11px/1.4 var(--font-body);letter-spacing:.065em;text-transform:uppercase;color:#6e6e6e;}
-  .pb-sec{margin:0;font:400 13px/1.5 var(--font-body);color:#5a5870;}
-  /* the two percentages are as big as the number of entries in the ring (28; the ring sets its own size back in its units) */
-  .pb-num{font:600 28px/1 var(--font-heading);letter-spacing:-.02em;color:#7f60cc;}
-  .pb-paper[data-ref]{cursor:pointer;}
-  .pb-when-1{white-space:nowrap;}
-  .pb-num small{font-size:.6em;margin-left:.16em;}
-  .pb-sub{margin:10px 0 0;white-space:nowrap;font:400 11px/1.4 var(--font-body);letter-spacing:.065em;text-transform:uppercase;color:#6e6e6e;}
-  .pb-heat{left:0;top:0;width:780px;height:360px;z-index:1;}
-  .pb-heat .pt-hm{position:absolute;left:76px;top:68px;--hm:40px;font:400 12px/1.2 var(--font-body);color:#5a5870;}
-  .pb-heat .pt-hm .pt-band{font-weight:400;color:#5a5870;}
-  .pb-heat .pt-cell{width:var(--hmw,var(--hm));height:var(--hmh,var(--hm));font-size:12px;letter-spacing:0;}
   /* a cell without records has no fill, only a dashed outline with long dashes (an svg, since a css border cannot set the dash length) */
-  .pb-heat .pt-cell.is-empty{position:relative;background:none;border:0;}
   .pt-dash{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
-  .pt-dash rect{x:.75px;y:.75px;width:calc(100% - 1.5px);height:calc(100% - 1.5px);rx:9px;fill:none;stroke:rgba(34,34,34,.4);stroke-width:1.5;stroke-dasharray:var(--dash,4px) var(--gap,3px);}
-  .pb-heat .pt-hm{grid-template-columns:34px repeat(7,var(--hmw,var(--hm)));}
-  .pb-when{position:absolute;left:480px;top:70px;width:220px;height:181px;display:flex;align-items:center;}
-  .pb-hand{position:absolute;left:0;top:0;overflow:visible;pointer-events:none;}
-  .pb-sheet{z-index:3;}
-  .pb-sheet:has(.pt-chip:hover,.pt-chip:focus){z-index:20;}
-  .pb-shape{position:absolute;left:0;top:0;overflow:visible;pointer-events:none;}
-  .pb-shape .sheet{fill:#fff;stroke:none;}
-  .pb-shape .flap{fill:#fff;stroke:none;}
-  /* the tag and the folded corner: the chips' violet (#e5e1f7), lighter; the tag is opaque and has a thin half-white edge so it does not melt into a background of the same colour */
-  .pb-shape .tagbody{fill:#eeebfa;stroke:rgba(255,255,255,.75);stroke-width:.75;}
-  .pb-paper .pb-shape :is(.sheet,.flap){stroke:none;}
-  .pb-paper .pb-shape .flap{fill:#eeebfa;stroke:rgba(255,255,255,.75);stroke-width:.75;stroke-linejoin:round;}
-  .pb-shape .crease{fill:none;stroke:#202020;stroke-opacity:.16;stroke-width:1;}
-  .pb-sc{position:absolute;inset:0;}
-  .pb-freq{left:672px;top:26px;width:560px;height:329px;}
-  .pb-fin{position:absolute;left:50px;right:50px;top:40px;}
-  .pb-n{font:inherit;color:inherit;cursor:default;}
+  .pt-dash rect{x:.6px;y:.6px;width:calc(100% - 1.2px);height:calc(100% - 1.2px);rx:9px;fill:none;stroke:rgba(34,34,34,.4);stroke-width:1.2;stroke-dasharray:var(--dash,4px) var(--gap,3px);}
   mark.pb-mark{padding:.08em .2em;}
-  .pb-chips{position:absolute;left:50px;right:50px;bottom:40px;display:flex;flex-wrap:wrap;gap:8px;}
-  /* the chips use the size of the main text */
-  .pb-chips .pt-chip{padding:3px 13px;font-size:15px;line-height:1.5;}
-  .pb-chips .pt-chip small{font:400 15px/1 var(--font-body);color:#5a5870;}
-  .pb-clip.is-back{z-index:-1;}
-  .pb-binder{position:absolute;z-index:5;left:1.5px;top:58px;overflow:visible;fill:none;stroke:#202020;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round;transform:rotate(90deg);pointer-events:none;}
-  .pb-binder .bg{fill:#fff;}
-  .pb-clip{position:absolute;z-index:5;left:456px;top:-14px;overflow:visible;fill:none;stroke:#202020;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transform:rotate(10deg);pointer-events:none;}
-  .pb-thought{left:-16px;top:276px;width:640px;height:182px;}
-  .pb-tin{position:absolute;left:92px;right:46px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;}
-  .pb-donut{left:672px;top:379px;width:504px;height:289px;z-index:1;}
-  .pb-donut .pat-topic-chart{position:absolute;left:0;top:0;width:470px;height:214px;display:block;transform-origin:0 0;}
-  .pb-donut .pat-topic-chart svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;}
-  /* the ring is scaled: patBoardFit sets these sizes in its own units so that on the board they are 15 (labels) and 11 (the caption) */
-  .pb-stage .pat-topic-label{font-size:var(--pb-tl,15px);}
-  .pb-stage :is(.pat-topic-percent,.pat-topic-label tspan){font-size:var(--pb-tl,15px);}
-  .pb-stage .pat-topic-total{font:600 var(--pb-tot,28px) var(--font-heading);fill:#111;}
-  .pb-stage .pat-topic-unit{font-family:var(--font-body);font-weight:400;font-size:var(--pb-cap,11px);letter-spacing:.065em;text-transform:uppercase;fill:#6e6e6e;}
-  .pb-tag{left:4px;top:330px;width:244px;height:100px;rotate:-2.2deg;z-index:3;}
-  .pb-tag .pb-tc{position:absolute;left:84px;right:24px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;}
-  .pb-paper{left:192px;top:358px;width:200px;height:92px;rotate:1.6deg;z-index:4;}
-  /* on hover the folded corner turns back up, and the arrow on it goes with it */
-  /* the corner turns over smoothly: the sheet keeps its folded shape while the corner moves and becomes a full rectangle only once the
-     corner has landed; the corner shows its violet back until it is half way over */
-  .pb-paper .pb-shape .sheet{d:var(--d0);transition:d 0s;}
-  .pb-paper[data-ref]:hover .pb-shape .sheet{d:var(--d1);transition:d 0s linear .32s;}
-  .pb-paper .pb-shape .flap{d:var(--d0);transition:d .32s ease-in-out,fill 0s linear .16s;}
-  .pb-paper[data-ref]:hover .pb-shape .flap{d:var(--d1);fill:#fff;}
-  /* the arrow shows only once the corner is open, a little further from the edges than the corner's middle */
-  .pb-paper .pb-go{opacity:0;translate:7px -11px;transition:opacity .12s ease;}
-  .pb-paper[data-ref]:hover .pb-go{opacity:1;color:#111;transition:opacity .2s ease .3s;}
-  /* «Снижение тревоги» beside the two numbers, with a short arrow, like the text beside the map */
-  .pb-drop{position:absolute;left:88px;top:380px;white-space:nowrap;}
-  .pb-paper .pb-pc{position:absolute;left:36px;right:30px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;}
-  .pb-go{position:absolute;display:flex;align-items:center;justify-content:center;width:22px;height:22px;margin:0;padding:0;border:0;background:none;color:#5a5870;cursor:pointer;transition:color .15s ease;}
-  .pb-go:hover{color:#111;}
-  .pb-go svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-  body[data-view] :is(.pb-go,.pb-chips .pt-chip):is(:focus,:focus-visible){outline:none!important;}
+
+  /* ---- «Паттерны» as one page: the period, a large headline, the average drop, two cards ---- */
+  /* the period: three words in a row, the chosen one black */
+  .pat-filters{display:flex;align-items:center;gap:0;}
+  .pat-filter{padding:6px 14px;border:0;border-radius:999px;background:none;font:400 13px/1.4 var(--font-body);color:#7a7a7a;cursor:pointer;transition:color .15s ease,background .15s ease;}
+  .pat-filter:hover{color:#3f3f3f;}
+  .pat-filter[aria-pressed="true"]{color:#111;cursor:default;background:rgba(255,255,255,.5);box-shadow:0 1px 2px rgba(64,52,128,.04),0 2px 8px rgba(64,52,128,.05)!important;backdrop-filter:blur(14px) saturate(1.15)!important;-webkit-backdrop-filter:blur(14px) saturate(1.15)!important;}
+  .pat-filter:focus-visible{outline:2px solid #444;outline-offset:4px;border-radius:2px;}
+  body[data-view="patterns"] #patterns.has-notes #patMeta{display:flex;align-items:center;min-height:0;margin:0 0 20px;}
+  body[data-view="patterns"] #patterns.has-notes #patMeta .pat-toolbar-actions{display:none;}
+  body[data-view="patterns"] #patterns.has-notes #patGrid.pat-grid{display:block;flex:1;min-height:0;position:relative;}
+  .pn{height:100%;display:flex;flex-direction:column;}
+  /* the headline: the font of the headings in «Разбор», large, always two lines (patNotesFit makes it smaller if a line would not fit) */
+  #patterns .pn-title{margin:0;font:700 clamp(34px,3.1vw,54px)/1.12 var(--font-heading);font-family:var(--font-heading)!important;letter-spacing:-.015em;text-transform:none;color:#111;}
+  .pn-line{display:block;width:max-content;white-space:nowrap;}
+  /* the line under the headline is set like the main text of the cards; on hover the link turns violet and its arrow moves on */
+  .pn-sub{margin:16px 0 0;display:flex;flex-direction:column;align-items:flex-start;gap:4px;font:400 13px/1.6 var(--font-body);color:#111;}
+  .pn-best{padding:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;transition:color .2s ease;}
+  .pn-best{display:inline-flex;align-items:center;gap:0;}
+  .pn-arrow{display:inline-flex;margin-left:3px;transition:transform .25s cubic-bezier(.3,.7,.3,1);}
+  .pn-arrow svg{display:block;width:15px;height:15px;}
+  .pn-arrow svg *{vector-effect:non-scaling-stroke;stroke-width:1.2px;}
+  .pn-best:hover,.pn-best:focus-visible{color:#7f60cc;outline:none;}
+  .pn-best:hover .pn-arrow,.pn-best:focus-visible .pn-arrow{transform:translateX(6px);}
+  /* on a 12-column grid (gutter 16): the schedule takes 5 columns, the thoughts 7 — the schedule needs less room, and at 1280 five columns
+     still hold its longest line («Тревога выше в понедельник вечером, заранее запланируй паузу») */
+  .pn-cards{flex:1;min-height:0;display:grid;grid-template-columns:calc((100% - 176px) * 5 / 12 + 64px) 1fr;gap:16px;margin-top:32px;}
+  .pn-card{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;padding:24px 28px 28px;border-radius:28px;background:rgba(255,255,255,.3);border:1px solid var(--ui-glass-edge);box-shadow:var(--ui-shadow-sm)!important;backdrop-filter:blur(18px) saturate(1.15)!important;-webkit-backdrop-filter:blur(18px) saturate(1.15)!important;}
+  .pn-card:has(.pn-thought-q:hover,.pn-dist:focus){z-index:5;}
+  /* the type of an open разбор in «История»: captions are its labels (capitals, grey), the main text its text (13), the thoughts a step smaller */
+  .pn-cap{margin:0;font:400 11px/1.4 var(--font-body);letter-spacing:.065em;text-transform:uppercase;color:#7a7a7a;}
+  @media(max-width:1050px),(max-height:800px){.pn-cap{font-size:10px;}}
+  .pn-when{margin:8px 0 0;font:400 13px/1.6 var(--font-body);color:#111;}
+  .pn-when-1{white-space:nowrap;}
+  /* the map at the bottom of its card: day names on top, the times of day on the right */
+  .pn .pt-hm{width:max-content;margin-top:auto;grid-template-columns:repeat(7,34px) auto;gap:6px;font:400 12px/1.2 var(--font-body);color:#7a7a7a;}
+  .pn .pt-hm .pt-band{font-weight:400;color:#7a7a7a;padding-left:6px;}
+  .pn .pt-cell{width:34px;height:34px;font-size:13px;letter-spacing:0;}
+  .pn .pt-cell.is-empty{position:relative;background:none;border:0;}
+  /* the three thoughts at the bottom of their card: the thought grey with the chip of its distortion, what helped black */
+  .pn-thoughts{list-style:none;margin:auto 0 0;padding:0;display:flex;flex-direction:column;gap:16px;}
+  .pn-thought{position:relative;}
+  .pn-thought[hidden]{display:none;}
+  .pn-thought-q{margin:0;font:400 12px/1.6 var(--font-body);color:#6e6e6e;}
+  .pn-thought-a{margin:2px 0 0;font:400 13px/1.6 var(--font-body);color:#111;}
+  .pn-none{margin-top:auto;color:#6e6e6e;}
+  /* the distortion follows the thought as plain text; hovering the line (its text, not the empty room after it) turns it violet like the hovered «самый эффективный разбор» link and opens its tip
+     to the right of the line, centred on it — above the line when there is no room on the right; the tip has the size of the main text */
+  .pn-dist{cursor:default;outline:none;transition:color .15s ease;}
+  .pn-thought-q{width:fit-content;max-width:100%;cursor:default;}
+  .pn-thought-q:hover .pn-dist,.pn-dist:focus-visible{color:#7f60cc;}
+  .pn-thought .pt-tip{left:var(--tip-x,0px);top:var(--tip-y,0px);width:300px;padding:14px 18px;border-radius:14px;font:400 13px/1.6 var(--font-body);white-space:normal;transform:translateX(-4px);}
+  .pn-thought .pt-tip.is-above{transform:translateY(4px);}
+  /* a triangle on the side that faces the distortion, at its height (or under it when the tip is above); the shadow is a filter so that it
+     wraps the triangle as well */
+  .pn-thought .pt-tip{box-shadow:none!important;filter:drop-shadow(0 2px 6px rgba(64,52,128,.10)) drop-shadow(0 14px 36px rgba(64,52,128,.20))!important;}
+  .pn-thought .pt-tip::before{content:"";position:absolute;left:-7px;top:var(--arrow-y,50%);width:8px;height:14px;margin-top:-7px;background:#fff;clip-path:polygon(100% 0,0 50%,100% 100%);}
+  .pn-thought .pt-tip.is-above::before{left:var(--arrow-x,50%);top:auto;bottom:-7px;width:14px;height:8px;margin:0 0 0 -7px;clip-path:polygon(0 0,100% 0,50% 100%);}
+  .pn-mind.is-measuring .pt-tip{display:none;}
+  .pn-thought-q:hover .pt-tip,.pn-dist:focus .pt-tip{opacity:1;visibility:visible;transform:none;transition:opacity .14s ease,transform .14s ease;}
+  .pn-thought .pt-tip .pt-tip-cap{margin:16px 0 4px;font-size:10px;}
 
   /* A question mark set in Nunito sits right against the last letter: it gets a little air (~3px at 21px). */
   .q-mark{margin-left:.1em;}
@@ -4254,16 +4233,17 @@
 
   // ============ HISTORY / BOOKS / SEARCH ============
 
+  // about: how the topic reads in the headline of «Паттерны» («Тревожишься о работе»)
   const TOPICS = [
-    { id:'work',        name:'Работа',            color:'#555555', keywords:['коллег','начальник','руководител','созвон','проект','дедлайн','зарплат','увол','собеседован','офис','рабочий','рабочая','рабочего','задач','клиент','отчёт','отчет','босс'] },
-    { id:'relationship', name:'Отношения',        color:'#555555', keywords:['парн','девушк','муж','жена','люблю','любим','отношени','свидан','ревност','измен','развод','партнер','партнёр'] },
-    { id:'family',       name:'Семья',            color:'#555555', keywords:['мама','папа','родител','сын','дочь','брат','сестра','семь','бабушк','дедушк'] },
-    { id:'friends',      name:'Дружба и общение', color:'#555555', keywords:['друг','подруг','компани','общени','знаком','приятел','ссор с друз'] },
-    { id:'hobby',        name:'Хобби',            color:'#555555', keywords:['хобби','спорт','трениров','рисова','музык','книг','путешестви','игра','фотограф','концерт'] },
-    { id:'health',       name:'Здоровье',         color:'#555555', keywords:['здоровь','болезн','врач','самочувств','сон','бессонниц','питани','боли','анализ','диагноз'] },
-    { id:'money',        name:'Финансы',          color:'#555555', keywords:['деньг','финанс','кредит','долг','бюджет','покупк','зарплат','счет','счёт','трат'] },
-    { id:'growth',       name:'Саморазвитие',     color:'#555555', keywords:['учеб','курс','экзамен','развити','цель','мотиваци','навык','обучен'] },
-    { id:'other',        name:'Другое',           color:'#555555', keywords:[] }
+    { id:'work',        name:'Работа',            about:'о работе', color:'#555555', keywords:['коллег','начальник','руководител','созвон','проект','дедлайн','зарплат','увол','собеседован','офис','рабочий','рабочая','рабочего','задач','клиент','отчёт','отчет','босс'] },
+    { id:'relationship', name:'Отношения',        about:'об отношениях', color:'#555555', keywords:['парн','девушк','муж','жена','люблю','любим','отношени','свидан','ревност','измен','развод','партнер','партнёр'] },
+    { id:'family',       name:'Семья',            about:'о семье', color:'#555555', keywords:['мама','папа','родител','сын','дочь','брат','сестра','семь','бабушк','дедушк'] },
+    { id:'friends',      name:'Дружба и общение', about:'о дружбе и общении', color:'#555555', keywords:['друг','подруг','компани','общени','знаком','приятел','ссор с друз'] },
+    { id:'hobby',        name:'Хобби',            about:'о хобби', color:'#555555', keywords:['хобби','спорт','трениров','рисова','музык','книг','путешестви','игра','фотограф','концерт'] },
+    { id:'health',       name:'Здоровье',         about:'о здоровье', color:'#555555', keywords:['здоровь','болезн','врач','самочувств','сон','бессонниц','питани','боли','анализ','диагноз'] },
+    { id:'money',        name:'Финансы',          about:'о деньгах', color:'#555555', keywords:['деньг','финанс','кредит','долг','бюджет','покупк','зарплат','счет','счёт','трат'] },
+    { id:'growth',       name:'Саморазвитие',     about:'о саморазвитии', color:'#555555', keywords:['учеб','курс','экзамен','развити','цель','мотиваци','навык','обучен'] },
+    { id:'other',        name:'Другое',           about:'', color:'#555555', keywords:[] }
   ];
 
   function classifyTopic(text){
@@ -4721,7 +4701,8 @@
   // Opening a book fades the shelf away and grows the open book in the very same spot —
   // no popup, no backdrop, it just replaces the shelf on this screen. It always opens
   // on the table of contents, unless a specific разбор was asked for (e.g. from search).
-  let bookBusy = false, bookSource = null;
+  // readerReturn: the view a разбор was opened from when it is not «История» itself («Закрыть» goes back there); null otherwise
+  let bookBusy = false, bookSource = null, readerReturn = null;
   // Every cover or page animation takes a token; leaving the history view bumps it, so a late animation never touches the new state.
   let bookAnimToken = 0;
   const afterBusy = [];
@@ -4788,9 +4769,12 @@
     if(token!==bookAnimToken)return;
     let fade=null;
     if(!opening){
-      // what the fade uncovers: the shelf (laid out for the current window) or the search results
-      if(searchInput.value.trim())document.getElementById('searchResults').classList.remove('hidden');
-      else{grid.classList.remove('hidden');fitShelfWidth();}
+      // what the fade uncovers: the shelf (laid out for the current window) or the search results; nothing when the разбор was opened from
+      // another view (Patterns), which comes back right after the fade
+      if(!readerReturn){
+        if(searchInput.value.trim())document.getElementById('searchResults').classList.remove('hidden');
+        else{grid.classList.remove('hidden');fitShelfWidth();}
+      }
       fade=section.animate([{opacity:1},{opacity:0}],{duration:220,fill:'forwards'});
       try{await Promise.race([fade.finished,new Promise(r=>setTimeout(r,500))]);}catch{}
       if(token!==bookAnimToken)return;
@@ -4848,6 +4832,11 @@
     animateBinding(false, direction);
   }
   function finishCloseBook(){
+    if(readerReturn==='patterns'){
+      const back=readerReturn;readerReturn=null;showView(back,{intro:false});
+      if(!reducedMotion())document.getElementById(back).animate([{opacity:0},{opacity:1}],{duration:260,easing:'ease-out'});
+      return;
+    }
     document.getElementById('readerSection').classList.remove('visible');
     document.getElementById('booksGrid').classList.remove('hidden');
     fitShelfWidth();
@@ -5706,11 +5695,42 @@
 
   function periodEntries(entries,period,now=new Date()){
     if(period==='all')return entries;
-    const days=Number(period);if(![30,90,180].includes(days))return entries;
+    const days=Number(period);if(![7,30,90,180].includes(days))return entries;
     const from=new Date(now);from.setHours(0,0,0,0);from.setDate(from.getDate()-days+1);
     return entries.filter(e=>{const date=new Date(e.date);return date>=from&&date<=now;});
   }
   function relativeReduction(before,after){return before>0?(before-after)/before*100:null;}
+
+  // What the person worries about, said in a few words: a dictionary of common reasons, each found by phrases in the situation and the thought
+  // (the text is normalized: lower case, «ё» as «е»). A record counts once for a reason; a reason needs two records to be named.
+  const WORRIES=[
+    {id:'dismissal',about:'об увольнении',re:/увол|сократ|сокращени|останется ли (?:моя )?должност|потер\S* работ/},
+    {id:'opinion',about:'о том, что о тебе подумают',re:/(?:подума|думают|считают|заметят)[^.!?]{0,40}(?:обо мне|меня|что я)|обо мне подумают/},
+    {id:'work',about:'об оценке своей работы',re:/недоволен моей работ|по моей работе|хуже работаю|плохой специалист|ругать|не возьмут/},
+    {id:'abilities',about:'о своих способностях',re:/недостаточно (?:умн|способн|гибк|организован|успешн)|нет таланта|не гожусь|не умею|некомпетент|делаю все неправильно|не свое направление/},
+    {id:'comparison',about:'о сравнении с другими',re:/сравни|получил повышение|зарабатывают больше|быстрее меня|дается другим|хуже него|отстаю/},
+    {id:'valued',about:'о том, что тебя не ценят',re:/недооцен|по достоинству|никому не (?:важн|интересн)|все равно на (?:меня|мои)|не важна наша|не важны эти/},
+    {id:'leftout',about:'о том, что тебя не зовут',re:/не позвал|не пригласил|без меня|вычеркнул|вытесня|избегает/},
+    {id:'breakup',about:'о будущем отношений',re:/расста|разваливаются|отдаляемся|не подходим друг другу|разонравил|остались чувства/},
+    {id:'conflict',about:'о ссорах',re:/ссор|поссор|в споре|возник спор/},
+    {id:'parents',about:'о родителях',re:/родител|(?:^|[^\p{L}])(?:мам|пап)[аеуы]?(?![\p{L}])/u},
+    {id:'deadlines',about:'о сроках',re:/в срок|дедлайн|не успел|опоздал|вовремя/},
+    {id:'mistakes',about:'об ошибках',re:/ошибк|ошибл|перепутал|неправильно/},
+    {id:'quitting',about:'о брошенных делах',re:/бросил|бросила|брошу|забросил|отложил|откладыва|не закончу|не довожу|дисциплин/},
+    {id:'illness',about:'о серьёзной болезни',re:/серьезн|диагноз|болезн|обследовани|симптом|травмир/},
+    {id:'tired',about:'о сне и усталости',re:/плохо сплю|бессонниц|устал|устаю|усталост/},
+    {id:'spending',about:'о тратах',re:/потратил|ненужную вещь|занять денег|не смогла оплатить|списание/},
+    {id:'savings',about:'о финансовой стабильности',re:/накопил|сбережени|финансово стабил|зарплат/},
+    {id:'study',about:'об учёбе',re:/экзамен|завалил|курс[еау]?(?![\p{L}])|вебинар|тренинг/u},
+    {id:'interview',about:'о собеседованиях',re:/собеседовани/},
+    {id:'memory',about:'о памяти',re:/памят/},
+    {id:'habits',about:'о привычках',re:/привычк|силы воли|сорвалась|нездоровую еду/}
+  ];
+  function worriesOf(entries){
+    const found=WORRIES.map(w=>({id:w.id,about:w.about,n:0}));
+    entries.forEach(e=>{const t=norm(String(e.event||'')+'. '+String(e.thought||''));WORRIES.forEach((w,i)=>{if(w.re.test(t))found[i].n++;});});
+    return found.filter(w=>w.n>=2).sort((a,b)=>b.n-a.n);
+  }
   function alternativeThought(text){
     const id=classifyDistortions(text)[0]?.id;
     const variants={
@@ -5804,6 +5824,7 @@
     out.helpful=entries.filter(e=>e._b>e._a&&String(e.contradict||'').trim().length>=12).map(e=>({entry:e,drop:e._b-e._a}))
       .sort((a,b)=>b.drop-a.drop||b.entry._t-a.entry._t).filter(x=>{const k=norm(x.entry.contradict);if(seen.has(k))return false;seen.add(k);return true;}).slice(0,3)
       .map(x=>({fact:String(x.entry.contradict).trim(),thought:String(x.entry.thought||'').trim(),drop:Math.round(x.drop),date:x.entry._t,entry:x.entry}));
+    out.worries=worriesOf(entries);
     out.entries=entries;
     out.practice=practiceFor(out);
     return out;
@@ -5849,7 +5870,7 @@
     return lines.join('\n');
   }
 
-  window.PatternsAnalysis={MIN_ENTRIES,DAY_NAMES,DAY_IN,BANDS,DISTORTIONS,plural,validEntries,computePatterns,classifyDistortions,patternsText,practiceFor,periodEntries,relativeReduction,alternativeThought,norm};
+  window.PatternsAnalysis={MIN_ENTRIES,DAY_NAMES,DAY_IN,BANDS,DISTORTIONS,WORRIES,plural,validEntries,computePatterns,classifyDistortions,patternsText,practiceFor,periodEntries,relativeReduction,alternativeThought,worriesOf,norm};
   })();
 
   // ============ ПАТТЕРНЫ: картотека находок ============
@@ -6006,413 +6027,143 @@
     document.querySelectorAll('#patGrid .pat-card').forEach(card=>{card.hidden=false;});
   }
 
+  // the period: three words in a row, no list; the chosen one is black
   function patToolbar(src){
-    const options=[['all','Всё время'],['30','Последние 30 дней'],['90','Последние 90 дней'],['180','Последние 180 дней']];
-    document.getElementById('patMeta').innerHTML='<div class="pat-period"><button type="button" id="patPeriod" aria-haspopup="listbox" aria-expanded="false" aria-controls="patPeriodList">'+options.find(x=>x[0]===patPeriod)[1]+'</button><div id="patPeriodList" role="listbox" aria-label="Период" hidden>'+options.map(([value,label])=>'<button type="button" role="option" aria-selected="'+(value===patPeriod)+'" data-period="'+value+'">'+label+'</button>').join('')+'</div></div><div class="pat-toolbar-actions"><button type="button" class="pat-replay" id="patReplay">Открыть картотеку<span class="pat-replay-arrow" aria-hidden="true">↗</span></button></div>';
-    const trigger=document.getElementById('patPeriod'),list=document.getElementById('patPeriodList');
-    const close=()=>{list.hidden=true;trigger.setAttribute('aria-expanded','false');};
-    const open=()=>{list.hidden=false;trigger.setAttribute('aria-expanded','true');list.querySelector('[aria-selected="true"]').focus();};
-    trigger.onclick=()=>list.hidden?open():close();
-    trigger.onkeydown=e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();open();}};
-    list.onclick=e=>{const choice=e.target.closest('[data-period]');if(!choice)return;patPeriod=choice.dataset.period;patShow(false);document.getElementById('patPeriod').focus();};
-    list.onkeydown=e=>{const buttons=[...list.children],i=buttons.indexOf(document.activeElement);if(e.key==='Escape'){e.preventDefault();close();trigger.focus();}else if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length].focus();}else if(e.key==='Tab')close();};
+    const options=[['all','Всё время'],['30','Последний месяц'],['90','Последний квартал']];
+    if(!options.some(o=>o[0]===patPeriod))patPeriod='all';
+    document.getElementById('patMeta').innerHTML='<div class="pat-filters" role="group" aria-label="Период">'+options.map(([value,label])=>'<button type="button" class="pat-filter" data-period="'+value+'" aria-pressed="'+(value===patPeriod)+'">'+label+'</button>').join('')+'</div>'
+      +'<div class="pat-toolbar-actions"><button type="button" class="pat-replay" id="patReplay">Открыть картотеку<span class="pat-replay-arrow" aria-hidden="true">↗</span></button></div>';
+    document.querySelectorAll('#patMeta .pat-filter').forEach(b=>b.onclick=()=>{if(b.dataset.period===patPeriod)return;patPeriod=b.dataset.period;patShow(false);document.querySelector('#patMeta .pat-filter[aria-pressed="true"]')?.focus();});
     document.getElementById('patReplay').onclick=()=>patPlayIntro();document.getElementById('patReplay').hidden=!src.entries;
   }
-  document.addEventListener('pointerdown',e=>{const list=document.getElementById('patPeriodList');if(list&&!e.target.closest('.pat-period')){list.hidden=true;document.getElementById('patPeriod').setAttribute('aria-expanded','false');}});
+  // One page: the headline (what the person worries about), the average drop with a link to the most helpful разбор, then two cards:
+  // days and times (the map, what it shows and what to do) and thoughts and distortions (the three most frequent thoughts and what helped).
   function patRenderDash(p,src){
     patRefs=[];
     const quote=(text,max=135)=>{text=String(text||'').trim();return patEsc(text.length>max?text.slice(0,max).replace(/\s+\S*$/,'')+'…':text);};
     const k=p.kpi,reduction=patA.relativeReduction(k.avgBefore,k.avgAfter),rounded=reduction===null?null:Math.round(reduction);
-    let heat='<span></span>'+patA.DAY_NAMES.map(day=>'<i class="pt-day">'+day+'</i>').join('');
-    // «Tone and number»: every filled cell shows its rounded average in white. The tone is one of four steps relative to the other filled cells
-    // (quartiles), so the whole range is used and neighbouring steps stay clearly apart; the top quarter is black. With fewer than 8 filled cells
-    // or a spread under 10 points the cells are not ranked (one middle tone). White numbers limit how light the lightest tone can be (on the lightest tile the number is a darker grey, about 4:1; on the others it is a pale grey).
+    // «Tone and number»: every filled cell shows its rounded average. The tone is one of four steps relative to the other filled cells
+    // (quartiles), so the whole range is used and neighbouring steps stay clearly apart; the top quarter is the darkest. With fewer than 8
+    // filled cells or a spread under 10 points the cells are not ranked (one middle tone). The day names run on top, the times of day on the right.
     const heatVals=p.time.cells.flat().filter(c=>c&&c.n).map(c=>Math.round(c.avg||0)).sort((x,y)=>x-y);
     const heatMax=heatVals[heatVals.length-1],heatMin=heatVals[0];
     const heatQ=f=>heatVals[Math.min(heatVals.length-1,Math.floor(f*heatVals.length))];
     const heatQ1=heatQ(.25),heatQ2=heatQ(.5),heatQ3=heatQ(.75);
     const heatRanked=heatVals.length>=8&&heatMax-heatMin>=10;
-    const patHigh='#2B2B2B'; // the dark grey of the second donut sector: the high cells here share it
-    const heatColors=['#FFFFFF','#9A9A9A','#575757',patHigh],heatInk=['#6A6A6A','#FAFAFA','#D8D8D8','#C4C4C4'];
-    // The peak cell (the same one the text beside the map names: the highest average among cells with 3 or more records) and the largest topic
-    // in the donut are violet (a dusty violet from the background's lavender); everything else stays grey.
+    const heatColors=['#FFFFFF','#9A9A9A','#575757','#2B2B2B'],heatInk=['#6A6A6A','#FAFAFA','#D8D8D8','#C4C4C4'];
+    // the peak cell (the one the text names: the highest average among cells with 3 or more records) is violet, everything else grey
     const patPeak='#7C67B8',patPeakInk='#F1EEFB',tPeak=p.time.peak,isPeak=(day,band)=>!!tPeak&&tPeak.day===day&&tPeak.band===band;
     const heatLevel=v=>!heatRanked?1:v>=heatQ3?3:v>=heatQ2?2:v>=heatQ1?1:0;
     const FULL_DAYS=['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
+    let heat=patA.DAY_NAMES.map(day=>'<i class="pt-day">'+day+'</i>').join('')+'<span></span>';
     [1,2,3,0].forEach(band=>{
-      heat+='<b class="pt-band">'+patA.BANDS[band].label+'</b>';
       p.time.cells.forEach((row,day)=>{
         const cell=row[band],shown=Math.round(cell.avg||0);
         // the tip has a caption (day and time) and a line, like the tips of the distortion chips
         const tipCap=FULL_DAYS[day]+', '+patA.BANDS[band].label,tip=cell.n?'Средняя тревога '+shown+'%, '+cell.n+' '+patA.plural(cell.n,['запись','записи','записей']):'Нет записей';
         heat+='<i class="pt-cell'+(cell.n?'':' is-empty')+'" tabindex="0" role="img" aria-label="'+patEsc(tipCap+': '+tip)+'" data-map-cap="'+patEsc(tipCap)+'" data-map-tip="'+patEsc(tip)+'"'+(cell.n?' style="--cell:'+(isPeak(day,band)?patPeak:heatColors[heatLevel(shown)])+';--num:'+(isPeak(day,band)?patPeakInk:heatInk[heatLevel(shown)])+'">'+shown:'><svg class="pt-dash" aria-hidden="true"><rect/></svg>')+'</i>';
       });
+      heat+='<b class="pt-band">'+patA.BANDS[band].label+'</b>';
     });
     const peak=p.time.peak;
-    // the text beside the map; the answer is in the sentence, the tab carries the period filter
-    const whenLabel=peak?'Тревога выше '+patA.DAY_IN[peak.day]+' '+patA.BANDS[peak.band].when:'Когда тревога выше';
-    // the day and time of the peak are marked like a match in the search
-    const whenHTML=peak?'<span class="pb-when-1">Тревога выше <mark class="pb-mark">'+patEsc(patA.DAY_IN[peak.day]+' '+patA.BANDS[peak.band].when)+',</mark></span><br>заранее запланируй паузу':'Пока нет устойчивого пика. Можно отмечать, что происходило перед усилением тревоги.';
-    // Include single-record topics too: a distribution must account for every record.
-    const counts=new Map();p.entries.forEach(e=>counts.set(e.topic||'other',(counts.get(e.topic||'other')||0)+1));
-    const topics=[...counts].map(([id,n])=>({id,n,name:getTopicMeta(id).name})).sort((a,b)=>b.n-a.n);
-    const colors=topics.map((_,i)=>{if(i===0)return patPeak;if(i===1)return patHigh;const shade=Math.max(47,Math.round(17+208*i/Math.max(1,topics.length-1)));return 'rgb('+shade+','+shade+','+shade+')';});
-    const circumference=2*Math.PI*68;let offset=0;
-    const sectors=topics.map((topic,i)=>{
-      const length=topic.n/p.n*circumference,tip=topic.name+' · '+Math.round(topic.n/p.n*100)+'% · '+topic.n+' '+patA.plural(topic.n,['разбор','разбора','разборов']);
-      const ring='<circle class="pat-sector" tabindex="0" role="img" aria-label="'+patEsc(tip)+'" data-sector="'+i+'" cx="210" cy="105" r="68" fill="none" stroke="'+colors[Math.min(i,colors.length-1)]+'" stroke-width="24" stroke-dasharray="'+Math.max(.2,length-1.8)+' '+(circumference-Math.max(.2,length-1.8))+'" stroke-dashoffset="'+(-offset-.9)+'" transform="rotate(-90 210 105)"></circle>';
-      offset+=length;return ring;
-    }).join('');
-    let cumulative=0;
-    const anchors=topics.map((topic,i)=>{
-      const angle=(cumulative+topic.n/2)/p.n*2*Math.PI-Math.PI/2;cumulative+=topic.n;
-      return {topic,i,right:Math.cos(angle)>=0,x:210+80*Math.cos(angle),y:105+80*Math.sin(angle),elbowX:210+88*Math.cos(angle),labelY:105+88*Math.sin(angle)};
-    });
-    // Some callouts are always on the right and some on the left: when the three permanent ones would all fall on one side,
-    // the third goes to the other side; its leader leaves the ring radially, runs round the outside of the ring (radius 92) down to the bottom
-    // and then straight to the label, so it never crosses the ring.
-    const firstThree=anchors.slice(0,3);
-    if(firstThree.length===3&&firstThree.every(a=>a.right===firstThree[0].right)){
-      const third=firstThree[2];
-      if(third.right){
-        const pts=[];
-        for(let t=Math.atan2(third.y-105,third.x-210);t<Math.PI/2-.05;t+=Math.PI/12)pts.push([210+92*Math.cos(t),105+92*Math.sin(t)]);
-        pts.push([210,197]);
-        third.right=false;third.below=pts;third.labelY=197;
-      }
-    }
-    // Resolve the permanent labels once. Hover can only move the extra label.
-    [false,true].forEach(right=>{
-      let y=14;anchors.filter(a=>a.i<3&&a.right===right).sort((a,b)=>a.labelY-b.labelY).forEach(a=>{if(!a.below)a.labelY=Math.max(y,Math.min(184,a.labelY));y=a.labelY+28;});
-    });
-    const renderLabels=active=>{
-      const visible=anchors.filter(a=>a.i<3||a.i===active).map(a=>({...a}));
-      const extra=visible.find(a=>a.i>=3);
-      if(extra){
-        const occupied=visible.filter(a=>a.i<3&&a.right===extra.right).map(a=>a.labelY);
-        const slots=Array.from({length:8},(_,i)=>14+i*26).filter(y=>occupied.every(v=>Math.abs(v-y)>=24));
-        extra.labelY=slots.sort((a,b)=>Math.abs(a-extra.labelY)-Math.abs(b-extra.labelY))[0]??200;
-      }
-      return visible.map(a=>{
-        const end=a.right?290:130,x=a.right?294:126,anchor=a.right?'start':'end';
-        return '<g class="pat-topic-callout"><path d="M '+a.x+' '+a.y+(a.below?a.below.map(p=>' L '+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(''):'')+' L '+(a.right?284:136)+' '+a.labelY+' H '+end+'" fill="none" stroke="#999" stroke-width="1"/><text x="'+x+'" y="'+(a.labelY+4)+'" text-anchor="'+anchor+'" class="pat-topic-label">'+patEsc(a.topic.name)+'<tspan fill="#888" dx="4">'+a.topic.n+'</tspan><tspan class="pat-topic-percent" dx="4">('+Math.round(a.topic.n/p.n*100)+'%)</tspan></text></g>';
-      }).join('');
-    };
-    const topicHTML='<div class="pat-topic-chart"><svg viewBox="-20 0 460 210" aria-label="Темы разборов">'+sectors+'<text x="210" y="106" text-anchor="middle" class="pat-topic-total">'+p.n+'</text><text x="210" y="123" text-anchor="middle" class="pat-topic-unit">разборов</text><g class="pat-topic-labels">'+renderLabels(-1)+'</g></svg></div>';
-    const distDesc={label:'Оценка себя целиком вместо конкретной трудности.',mindreading:'Предположение о чужих мыслях звучит как известный факт.',fortune:'Прогноз о будущем звучит как уже решённый исход.',catastrophizing:'Самый тяжёлый исход принимается за наиболее вероятный.',overgeneral:'Один случай переносится на «всегда» или «никогда».',blackwhite:'Учитываются только крайности, без промежуточных результатов.',should:'Жёсткое требование не учитывает силы и обстоятельства.',emotional:'Чувство используется как доказательство мысли.',personal:'Вся ответственность берётся на себя, без других факторов.',discount:'Положительный результат или свой вклад обесценивается.'};
-    // ===== one board: a file with the period filter on its tab; the findings lie on it as sheets, a tag and a paper =====
-    // the most frequent distortion in the thoughts, what it is and one thing to do about it; the other ones are chips with the same two texts in a tip
-    const advice=(p.practice&&p.practice.advice)||{},main=p.practice.thinking,others=p.distortions.rows.slice(1,6);
-    // the tip of a chip is written like the sheet: «name — what it is. How often it was met.», then the caption and the advice
-    const lowerFirst=t=>t.charAt(0).toLowerCase()+t.slice(1),metText=n=>'Встречалась '+patNum(n,['раз','раза','раз'])+'.';
-    const tipOf=r=>'<span class="pt-tip" role="tooltip"><span>'+patEsc(r.name)+(distDesc[r.id]?' — '+patEsc(lowerFirst(distDesc[r.id])):'.')+' '+metText(r.n)+'</span><span class="pt-tip-cap">Как с этим работать</span><span>'+patEsc(advice[r.id]||'')+'</span></span>';
-    const chipOf=r=>'<span class="pt-chip" tabindex="0" role="img" aria-label="'+patEsc(r.name+', '+patNum(r.n,['разбор','разбора','разборов'])+'. '+(distDesc[r.id]||'')+' Как с этим работать: '+(advice[r.id]||''))+'">'+patEsc(r.name)+'<small>'+r.n+'</small>'+tipOf(r)+'</span>';
-    const mainDesc=main?distDesc[main.id]||'':'';
-    const freqInner=main
-      ?'<div class="pb-fin"><p class="pb-cap">Частое искажение</p><p class="pb-text" style="margin-top:8px">'+patEsc(main.title)+(mainDesc?' — '+patEsc(lowerFirst(mainDesc)):'.')+' <span title="'+main.n+' из '+p.n+' '+patA.plural(p.n,['разбора','разборов','разборов'])+'">'+metText(main.n)+'</span></p>'
-        +'<p class="pb-cap" style="margin-top:22px">Как с этим работать</p><p class="pb-text" style="margin-top:5px">'+patEsc(main.how)+'</p></div>'
-        +(others.length?'<div class="pb-chips">'+others.map(chipOf).join('')+'</div>':'')
-      :'<div class="pb-fin"><p class="pb-text">Пока не видно. Одно и то же искажение ещё не повторялось в разборах.</p><p class="pb-cap" style="margin-top:22px">Что делать</p><p class="pb-text" style="margin-top:5px">Продолжай записывать мысли: когда узор появится, он будет здесь.</p></div>';
-    // the repeating thought and what helped (the user's own fact from the entry of this thought with the biggest drop)
-    const thought=p.thoughts[0];
-    let thoughtInner;
-    if(thought){
-      const helped=thought.entries.filter(e=>e._b>e._a&&String(e.contradict||'').trim().length>=12).sort((x,y)=>patA.relativeReduction(y._b,y._a)-patA.relativeReduction(x._b,x._a)||y._t-x._t)[0];
-      const alt=patA.alternativeThought(thought.label);
-      // a quote ends with a full stop after the closing mark, written like the distortion sheet: «…». Встречалась N раз.
-      const quoted=(t,max)=>'«'+quote(String(t||'').trim().replace(/([^.])\.$/,'$1'),max)+'».';
-      thoughtInner='<div class="pb-tin"><p class="pb-cap">Частая мысль</p><p class="pb-text" style="margin-top:8px">'+quoted(thought.label,110)+' <span class="pb-n">'+metText(thought.n)+'</span></p>'
-        +(helped?'<p class="pb-cap" style="margin-top:22px">Что помогало</p><p class="pb-text" style="margin-top:5px">'+quoted(helped.contradict,140)+'</p>':'<p class="pb-cap" style="margin-top:22px">Другой взгляд</p><p class="pb-text" style="margin-top:5px">'+patEsc(alt.text)+'</p>')+'</div>';
-    }else thoughtInner='<div class="pb-tin"><p class="pb-cap">Заметь в следующий раз</p><p class="pb-text" style="margin-top:8px">Ситуация → мысль → чувство → действие</p></div>';
-    // two numbers: the average change, and the biggest drop in one entry (the arrow on the folded corner opens that entry in the history)
+    const whenHTML=peak?'<span class="pn-when-1">Тревожнее всего '+patEsc(patA.DAY_IN[peak.day]+' '+patA.BANDS[peak.band].when)+', заранее запланируй паузу</span>':'Пока нет устойчивого пика. Можно отмечать, что происходило перед усилением тревоги.';
+    // the headline: the two topics with the most разборы in the period («Другое» left out), then what the records keep coming back to
+    const byTopic=new Map();p.entries.forEach(e=>{const id=e.topic||'other';if(id!=='other')byTopic.set(id,(byTopic.get(id)||0)+1);});
+    const topics=[...byTopic].sort((a,b)=>b[1]-a[1]).slice(0,2).map(([id])=>getTopicMeta(id).about).filter(Boolean);
+    // the topics share the first one's preposition: «о работе и саморазвитии», «о работе, дружбе и общении»
+    const nouns=topics.flatMap(t=>t.replace(/^об? /,'').split(' и '));
+    const aboutTopics=topics.length?topics[0].match(/^об? /)[0]+(nouns.length>1?nouns.slice(0,-1).join(', ')+' и '+nouns[nouns.length-1]:nouns[0]):'о разном';
+    const worry=(p.worries||[]).map(w=>w.about).find(a=>!topics.includes(a));
+    // always two lines: what the topics are, then what the records keep coming back to
+    const titleHTML='<span class="pn-line">Тревожишься '+patEsc(aboutTopics)+(worry?',':'')+'</span>'+(worry?'<span class="pn-line">переживаешь '+patEsc(worry)+'</span>':'');
+    // the line under it: the average drop, and the разбор with the biggest drop
     const bestEntry=p.entries.filter(e=>e._b>e._a).sort((x,y)=>patA.relativeReduction(y._b,y._a)-patA.relativeReduction(x._b,x._a)||y._t-x._t)[0];
-    const bestPct=bestEntry?Math.round(patA.relativeReduction(bestEntry._b,bestEntry._a)):null;
-    const bestDate=bestEntry?new Date(bestEntry._t).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'}):'';
-    const unit='<small>%</small>';
-    const avgBig=rounded===null?'—':(rounded>0?'−':rounded<0?'+':'')+Math.abs(rounded)+unit;
-    const avgCap='в среднем',dropLabel=rounded!==null&&rounded>0?'Снижение тревоги':'Изменение тревоги';
-    const goHTML=bestEntry?(patRefs.push(bestEntry),'<button type="button" class="pb-go" style="left:246px;top:26px" data-ref="'+(patRefs.length-1)+'" aria-label="Открыть разбор от '+bestDate+'"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></button>'):'';
-    const sheet=(cls,label,w,h,tear,crease,inner,fix)=>'<section class="pb-sheet pb-item '+cls+'" data-pat-item data-label="'+patEsc(label)+'">'+patSheetSVG(w,h,tear,crease)+'<div class="pb-sc">'+inner+'</div>'+(fix||'')+'</section>';
-    // the clip sits on the top edge of the sheet: its back loop goes behind the sheet, the front loop lies on it
-    // (the back part is the top bend and the right leg; the front part is the inner leg, the bottom bend and the whole left leg)
-    // the binder clip: one outline for its jaw (filled white, no lines inside it) and the two wire handles, which end at the jaw
-    const BINDER='<svg class="pb-binder" viewBox="0 0 54 65" width="70.2" height="84.5" aria-hidden="true"><path class="bg" d="M5 36H49L46.8 56H49V63H5V56H7.2Z"/><path d="M16 36L20 22C21 16 12 9 16 5C22 -1 36 -1 40 5C44 10 34 16 35 23L38 36"/></svg>';
-    const CLIP='<svg class="pb-clip is-back" viewBox="0 0 54 65" width="62" height="75" aria-hidden="true"><path d="M14 8C14 -4 37 -4 37 8V28"/></svg>'
-      +'<svg class="pb-clip" viewBox="0 0 54 65" width="62" height="75" aria-hidden="true"><path d="M31 11V45C31 60 14 59 14 45V8"/></svg>';
-    document.getElementById('patGrid').innerHTML='<div class="pb-stage" id="pbStage"><svg class="pb-file" viewBox="0 0 1216 698" aria-hidden="true"><path d=""/></svg>'
-      +'<div class="pb-heat pb-item" data-pat-item data-label="'+patEsc(whenLabel)+'"><div class="pt-hm" data-peak-row="'+(peak?[1,2,3,0].indexOf(peak.band):-1)+'">'+heat+'</div><div class="pb-when"><p class="pb-text">'+whenHTML+'</p></div><div class="pb-drop"><p class="pb-text">'+dropLabel+'</p></div>'+patHandArrow(470,500,420,500).replace('class="pb-hand"','class="pb-hand pb-hand-drop"')+'</div>'
-      +sheet('pb-freq','Частые искажения',560,285,null,0,freqInner,CLIP)
-      +sheet('pb-thought',thought?'Повторяющаяся мысль':'Как замечать свои мысли',640,182,{top:1,right:1,bottom:1},0,thoughtInner,BINDER)
-      +'<div class="pb-donut pb-item" data-pat-item data-label="Темы разборов">'+topicHTML+'</div>'
-      +'<div class="pb-tag pb-item" data-pat-item data-label="Среднее снижение тревоги">'+patTagSVG(244,100)+'<div class="pb-tc"><div class="pb-num">'+avgBig+'</div><p class="pb-sub">'+avgCap+'</p></div></div>'
-      // the whole paper opens that entry, and its hint shows over the whole paper
-      +'<div class="pb-paper pb-item" data-pat-item data-label="Максимальное снижение"'+(bestEntry?' data-ref="'+(patRefs.length-1)+'" data-hint="Открыть этот разбор"':'')+'>'+patPaperSVG(200,92)+'<div class="pb-pc"><div class="pb-num">'+(bestEntry?'−'+bestPct+unit:'—')+'</div><p class="pb-sub">максимально</p></div>'+goHTML+'</div></div>';
-    document.querySelectorAll('#patGrid [data-hint]').forEach(bindIconHint);
-    const chart=document.querySelector('.pat-topic-chart'),labelLayer=chart.querySelector('.pat-topic-labels');
-    chart.querySelectorAll('[data-sector]').forEach(segment=>{
-      const show=()=>{labelLayer.innerHTML=renderLabels(Number(segment.dataset.sector));};
-      const reset=()=>{labelLayer.innerHTML=renderLabels(-1);};
-      segment.addEventListener('pointerenter',show);segment.addEventListener('focus',show);segment.addEventListener('click',show);
-      segment.addEventListener('pointerleave',()=>{if(document.activeElement!==segment)reset();});segment.addEventListener('blur',reset);
-    });
+    let sub='<span class="pn-sub-line" data-pat-item data-label="Снижение тревоги">'+(rounded!==null&&rounded>0?'После разборов тревога снижалась в среднем на '+rounded+'%':'После разборов тревога в среднем не снижалась')+'</span>';
+    if(bestEntry){patRefs.push(bestEntry);sub+='<button type="button" class="pn-best" data-pat-item data-label="Эффективный разбор" data-ref="'+(patRefs.length-1)+'">Вот самый эффективный разбор<span class="pn-arrow" aria-hidden="true">'+ARROW_RIGHT_SVG+'</span></button>';}
+    // the three most frequent thoughts: the thought in grey with a chip of its distortion, under it what helped (the person's own fact from
+    // the record of this thought with the biggest drop), or another view when no record has one
+    const distDesc={label:'Оценка себя целиком вместо конкретной трудности.',mindreading:'Предположение о чужих мыслях звучит как известный факт.',fortune:'Прогноз о будущем звучит как уже решённый исход.',catastrophizing:'Самый тяжёлый исход принимается за наиболее вероятный.',overgeneral:'Один случай переносится на «всегда» или «никогда».',blackwhite:'Учитываются только крайности, без промежуточных результатов.',should:'Жёсткое требование не учитывает силы и обстоятельства.',emotional:'Чувство используется как доказательство мысли.',personal:'Вся ответственность берётся на себя, без других факторов.',discount:'Положительный результат или свой вклад обесценивается.'};
+    const advice=(p.practice&&p.practice.advice)||{},names=Object.fromEntries(patA.DISTORTIONS.map(d=>[d.id,d.name]));
+    // the distortion follows the thought after a dash, as plain text; hovering anywhere on that line opens its hint, which points at the name
+    // with a little triangle and so does not repeat it: what it is, then how to work with it
+    const lowerFirst=t=>t.charAt(0).toLowerCase()+t.slice(1);
+    const distOf=id=>'<span class="pn-dist" tabindex="0">'+patEsc(lowerFirst(names[id]))
+      +'<span class="pt-tip" role="tooltip"><span>'+patEsc(distDesc[id]||names[id]+'.')+'</span><span class="pt-tip-cap">Как с этим работать</span><span>'+patEsc(advice[id]||'')+'</span></span></span>';
+    const thoughts=p.thoughts.slice(0,3).map(t=>{
+      const weight={};t.entries.forEach(e=>patA.classifyDistortions(e.thought).forEach(h=>{weight[h.id]=(weight[h.id]||0)+h.score;}));
+      const id=Object.entries(weight).sort((x,y)=>y[1]-x[1])[0]?.[0];
+      const helped=t.entries.filter(e=>e._b>e._a&&String(e.contradict||'').trim().length>=12).sort((x,y)=>patA.relativeReduction(y._b,y._a)-patA.relativeReduction(x._b,x._a)||y._t-x._t)[0];
+      const sentence=text=>{text=String(text||'').trim();return quote(text,140)+(/[.!?…]$/.test(text)?'':'.');};
+      return '<li class="pn-thought"><p class="pn-thought-q">'+quote(String(t.label).trim().replace(/([^.])\.$/,'$1'),110)+(id&&names[id]?' — '+distOf(id):'')+'</p><p class="pn-thought-a">'+(helped?sentence(helped.contradict):patEsc(patA.alternativeThought(t.label).text))+'</p></li>';
+    }).join('');
+    const mindHTML=thoughts?'<ul class="pn-thoughts">'+thoughts+'</ul>':'<p class="pn-thought-a pn-none">Одинаковых мыслей пока нет. Когда мысль повторится хотя бы дважды, она появится здесь вместе с тем, что помогало.</p>';
+    document.getElementById('patGrid').innerHTML='<div class="pn">'
+      +'<div class="pn-head" data-pat-item data-label="Темы разборов"><h2 class="pn-title">'+titleHTML+'</h2></div>'
+      +'<div class="pn-sub">'+sub+'</div>'
+      +'<div class="pn-cards">'
+      +'<section class="pn-card pn-time" data-pat-item data-label="Расписание тревоги"><p class="pn-cap">Расписание тревоги</p><p class="pn-when">'+whenHTML+'</p><div class="pt-hm">'+heat+'</div></section>'
+      +'<section class="pn-card pn-mind" data-pat-item data-label="Частые мысли и искажения"><p class="pn-cap">Частые мысли и искажения</p>'+mindHTML+'</section>'
+      +'</div></div>';
     let tooltip=document.getElementById('patInstantTip');
     if(!tooltip){tooltip=document.createElement('div');tooltip.id='patInstantTip';tooltip.setAttribute('role','tooltip');tooltip.hidden=true;document.body.append(tooltip);}
     const hide=()=>{tooltip.hidden=true;};
     document.querySelectorAll('[data-map-tip]').forEach(cell=>{
-      const show=()=>{const cap=document.createElement('span'),line=document.createElement('span');cap.className='pt-tip-cap';cap.textContent=cell.dataset.mapCap||'';line.textContent=cell.dataset.mapTip;tooltip.replaceChildren(cap,line);tooltip.hidden=false;const r=cell.getBoundingClientRect();tooltip.style.left=Math.max(8,Math.min(innerWidth-tooltip.offsetWidth-8,r.left+r.width/2-tooltip.offsetWidth/2))+'px';tooltip.style.top=Math.max(8,r.top-tooltip.offsetHeight-8)+'px';cell.setAttribute('aria-describedby','patInstantTip');};
+      const show=()=>{const cap=document.createElement('span'),line=document.createElement('span');cap.className='pt-tip-cap';cap.textContent=cell.dataset.mapCap||'';line.textContent=cell.dataset.mapTip;tooltip.replaceChildren(cap,line);tooltip.hidden=false;
+        // above the cell, its triangle 8px from it (the tip stands 15px off) and on the cell's centre even when the tip is held inside the window
+        const r=cell.getBoundingClientRect(),w=tooltip.offsetWidth,h=tooltip.offsetHeight,cx=r.left+r.width/2,left=Math.max(8,Math.min(innerWidth-w-8,cx-w/2)),below=r.top-15-h<8;
+        tooltip.classList.toggle('is-below',below);tooltip.style.left=left+'px';tooltip.style.top=(below?r.bottom+15:r.top-15-h)+'px';tooltip.style.setProperty('--arrow-x',Math.max(16,Math.min(w-16,cx-left))+'px');
+        cell.setAttribute('aria-describedby','patInstantTip');};
       cell.onpointerenter=show;cell.onpointerleave=hide;cell.onfocus=show;cell.onblur=hide;cell.onclick=show;cell.onkeydown=e=>{if(e.key==='Escape')hide();};
     });
-    patBoardWatch();
+    document.querySelectorAll('.pn-thought .pn-dist').forEach(chip=>{
+      // right of where the line ends, centred on the line (kept inside the window), its triangle 8px from the text (the triangle sticks out
+      // 7px, so the tip itself stands 15px off); if it would come closer than 16px to the window's edge, above the distortion instead
+      const place=()=>{
+        const tip=chip.querySelector('.pt-tip');if(!tip)return;
+        const row=chip.closest('.pn-thought').getBoundingClientRect(),line=chip.closest('.pn-thought-q').getBoundingClientRect(),box=chip.closest('.pn-card').getBoundingClientRect(),parts=chip.getClientRects(),first=parts[0],end=parts[parts.length-1].right,w=tip.offsetWidth,h=tip.offsetHeight;
+        const right=end+15+w<=innerWidth-16;
+        const x=right?end+15:Math.max(box.left+12,Math.min(box.right-12-w,(first.left+end)/2-w/2));
+        const y=right?Math.max(8,Math.min(innerHeight-8-h,(line.top+line.bottom)/2-h/2)):first.top-15-h;
+        tip.classList.toggle('is-above',!right);
+        chip.style.setProperty('--tip-x',(x-row.left).toFixed(1)+'px');chip.style.setProperty('--tip-y',(y-row.top).toFixed(1)+'px');
+        // the triangle points at the line even when the tip was pushed up to stay in the window; it keeps clear of the rounded corners
+        chip.style.setProperty('--arrow-y',Math.max(16,Math.min(h-16,(line.top+line.bottom)/2-y)).toFixed(1)+'px');
+        chip.style.setProperty('--arrow-x',Math.max(16,Math.min(w-16,(first.left+end)/2-x)).toFixed(1)+'px');
+      };
+      chip.closest('.pn-thought-q').addEventListener('pointerenter',place);chip.addEventListener('focus',place);
+    });
+    patNotesWatch();
     if(patResizeObserver)patResizeObserver.disconnect();
   }
 
-  // Every folder's outline is one svg path. The tab is flush with the left edge; its right side is a short 45-degree slope with a rounded
-  // shoulder on top and a rounded joint to the body (equal radii, like the folder cards used as the model); the body has large rounded corners.
-  const PAT_SVG='http://www.w3.org/2000/svg';
-  function patFolderPath(W,H,th,R,rt,xa,r){
-    // xa: where the flat top of the tab ends; r: radius of the shoulder and of the joint
-    const o=.5,k=Math.SQRT1_2,f=v=>Math.round(v*100)/100;
-    const L=Math.max(0,(th-o-2*r*(1-k))/k);                    // the straight part of the slope
-    const x1=xa+r*k,y1=o+r*(1-k),x2=x1+L*k,y2=y1+L*k,x3=x2+r*k;
-    return 'M'+o+' '+f(H-o-R)+'L'+o+' '+f(o+rt)+'A'+rt+' '+rt+' 0 0 1 '+f(o+rt)+' '+o
-      +'L'+f(xa)+' '+o+'A'+f(r)+' '+f(r)+' 0 0 1 '+f(x1)+' '+f(y1)+'L'+f(x2)+' '+f(y2)+'A'+f(r)+' '+f(r)+' 0 0 0 '+f(x3)+' '+th
-      +'L'+f(W-o-R)+' '+th+'A'+R+' '+R+' 0 0 1 '+f(W-o)+' '+f(th+R)
-      +'L'+f(W-o)+' '+f(H-o-R)+'A'+R+' '+R+' 0 0 1 '+f(W-o-R)+' '+f(H-o)
-      +'L'+f(o+R)+' '+f(H-o)+'A'+R+' '+R+' 0 0 1 '+o+' '+f(H-o-R)+'Z';
+  // The map stands at the bottom of its card (34 cells). A thought that does not fit in its card is left out (the last first), so the card
+  // never scrolls or cuts a line.
+  function patNotesFit(){
+    const grid=document.getElementById('patGrid'),card=grid.querySelector('.pn-time'),hm=card&&card.querySelector('.pt-hm'),when=card&&card.querySelector('.pn-when');
+    if(!hm||!card.clientHeight)return;
+    const title=grid.querySelector('.pn-title');
+    if(title){title.style.fontSize='';const widest=Math.max(...[...title.children].map(l=>l.scrollWidth));if(widest>title.clientWidth)title.style.fontSize=(parseFloat(getComputedStyle(title).fontSize)*title.clientWidth/widest).toFixed(1)+'px';}
+    // the filters stand 20 under the logo (with its tagline); the header's height is not a whole number, so the step is set here
+    const logo=document.getElementById('logoHome'),meta=document.getElementById('patMeta');
+    if(logo&&meta){meta.style.marginTop='0px';meta.style.marginTop=(logo.getBoundingClientRect().bottom+20-meta.getBoundingClientRect().top).toFixed(2)+'px';}
+    const w=34,h=34;
+    // the dashes round an empty cell: a whole number of equal dash-and-gap pairs fits round it, so no dash is longer where the outline closes
+    const er=hm.querySelector('.pt-dash rect'),rw=w-1.5,rh=h-1.5,rr=Math.min(9,rh/2);
+    let per=2*(rw+rh)-8*rr+2*Math.PI*rr;try{if(er&&er.getTotalLength())per=er.getTotalLength();}catch(e){}
+    const pairs=Math.max(4,Math.round(per/7));hm.style.setProperty('--dash',(per/pairs*4/7).toFixed(2)+'px');hm.style.setProperty('--gap',(per/pairs*3/7).toFixed(2)+'px');
+    const mind=grid.querySelector('.pn-mind'),items=mind?[...mind.querySelectorAll('.pn-thought')]:[];
+    items.forEach(li=>{li.hidden=false;});
+    // the hidden tips hang beside their lines and would count as overflow, so they are left out while measuring
+    if(mind)mind.classList.add('is-measuring');
+    for(let i=items.length-1;i>0&&mind.scrollHeight>mind.clientHeight+1;i--)items[i].hidden=true;
+    if(mind)mind.classList.remove('is-measuring');
   }
-  // a card without a tab: the same outline as the body of a folder
-  function patPlainPath(W,H,R){
-    const o=.5,f=v=>Math.round(v*100)/100;
-    return 'M'+o+' '+f(o+R)+'A'+R+' '+R+' 0 0 1 '+f(o+R)+' '+o+'L'+f(W-o-R)+' '+o+'A'+R+' '+R+' 0 0 1 '+f(W-o)+' '+f(o+R)
-      +'L'+f(W-o)+' '+f(H-o-R)+'A'+R+' '+R+' 0 0 1 '+f(W-o-R)+' '+f(H-o)+'L'+f(o+R)+' '+f(H-o)+'A'+R+' '+R+' 0 0 1 '+o+' '+f(H-o-R)+'Z';
-  }
-  // ---- the board: its pieces are drawn at a fixed design size (1216 x 698) and the whole stage is scaled to the free area ----
-  const patSeeded=sd=>()=>{sd=(Math.imul(sd,1664525)+1013904223)>>>0;return sd/4294967296;};
-  // a sheet like the ones in the search results: straight or torn along the chosen edges (a fixed seed, so it always looks the same)
-  function patSheetPath(w,h,tear){
-    tear=tear||{};
-    const r=patSeeded(31),f=v=>v.toFixed(1),ph=r()*6,jag=x=>(Math.sin(x/17+ph)+1)*1.1+r()*1.4;
-    let d='M1 '+(tear.top?f(2+jag(0)):2);
-    if(tear.top){for(let x=6;x<w-10;x+=5+r()*10)d+='L'+f(x)+' '+f(2+jag(x));}
-    d+='L'+(w-6)+' '+(tear.top?f(2+jag(w)):2);
-    if(tear.right){for(let y=8;y<h-8;y+=4+r()*11){const x=w-2-(Math.sin(y/19+ph)+1)*1.6-r()*1.8;d+='L'+f(x)+' '+f(y);}}
-    else d+='L'+(w-1)+' '+(h-4);
-    d+='L'+(w-6)+' '+(tear.bottom?f(h-3-jag(w+3)):h-3);
-    if(tear.bottom){for(let x=w-12;x>8;x-=5+r()*10)d+='L'+f(x)+' '+f(h-3-jag(x+3));}
-    return d+'L1 '+(tear.bottom?f(h-3-jag(2)):h-3)+'Z';
-  }
-  // a sheet with a perforated edge, like a postage stamp: half-round notches of radius r about every `step`, and solid corners
-  // (the first notch on each side starts `corner` away from it)
-  function patStampPath(w,h,r=6,step=24,corner=13){
-    const f=v=>v.toFixed(1),at=len=>{const n=Math.max(1,Math.round((len-2*corner)/step)),g=(len-2*corner)/n;return Array.from({length:n},(_,i)=>corner+g*(i+.5));};
-    let d='M0 0';
-    at(w).forEach(c=>{d+='L'+f(c-r)+' 0A'+r+' '+r+' 0 0 0 '+f(c+r)+' 0';});
-    d+='L'+w+' 0';
-    at(h).forEach(c=>{d+='L'+w+' '+f(c-r)+'A'+r+' '+r+' 0 0 0 '+w+' '+f(c+r);});
-    d+='L'+w+' '+h;
-    at(w).forEach(c=>{d+='L'+f(w-c+r)+' '+h+'A'+r+' '+r+' 0 0 0 '+f(w-c-r)+' '+h;});
-    d+='L0 '+h;
-    at(h).forEach(c=>{d+='L0 '+f(h-c+r)+'A'+r+' '+r+' 0 0 0 0 '+f(h-c-r);});
-    return d+'Z';
-  }
-  const patStampSVG=(w,h)=>'<svg class="pb-shape" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><path class="sheet" d="'+patStampPath(w,h)+'"/></svg>';
-  const patSheetSVG=(w,h,tear,crease)=>'<svg class="pb-shape" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><path class="sheet" d="'+patSheetPath(w,h,tear)+'"/>'+(crease?'<path class="crease" d="M'+crease+' 10V'+(h-10)+'"/>':'')+'</svg>';
-  // the tag: a tapered left end and an eyelet with a ring
-  function patTagSVG(w,h){
-    // the eyelet is a real hole: the tag and its white ring are cut through there, so the moving background shows in it
-    const c=36,e=42,ring=r=>'M'+(e-r)+' '+h/2+'a'+r+' '+r+' 0 1 0 '+2*r+' 0a'+r+' '+r+' 0 1 0 '+(-2*r)+' 0Z';
-    const d='M'+c+' 1H'+(w-7)+'Q'+(w-1)+' 1 '+(w-1)+' 7V'+(h-7)+'Q'+(w-1)+' '+(h-1)+' '+(w-7)+' '+(h-1)+'H'+c+'L1 '+(h-c)+'V'+c+'Z'+ring(7);
-    return '<svg class="pb-shape" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><path class="tagbody" fill-rule="evenodd" d="'+d+'"/><path fill="#fff" fill-rule="evenodd" d="'+ring(13.5)+ring(7)+'"/></svg>';
-  }
-  // a white paper with the right upper corner folded down
-  function patPaperSVG(w,h){
-    const s=48,shape=(cls,a,b)=>'<path class="'+cls+'" d="'+a+'" style="--d0:path(\''+a+'\');--d1:path(\''+b+'\')"/>';
-    // folded: the corner lies on the paper; unfolded (on hover): the corner turns back over the fold and the paper is a full rectangle
-    const sheet0='M1 2L'+(w-s)+' 2L'+(w-1)+' '+(s+2)+'L'+(w-1)+' '+(h-3)+'L1 '+(h-3)+'Z',sheet1='M1 2L'+(w-s)+' 2L'+(w-1)+' 2L'+(w-1)+' '+(h-3)+'L1 '+(h-3)+'Z';
-    const flap0='M'+(w-s)+' 2L'+(w-s)+' '+(s+2)+'L'+(w-1)+' '+(s+2)+'Z',flap1='M'+(w-s)+' 2L'+(w-1)+' 2L'+(w-1)+' '+(s+2)+'Z';
-    return '<svg class="pb-shape" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" aria-hidden="true">'+shape('sheet',sheet0,sheet1)+shape('flap',flap0,flap1)+'</svg>';
-  }
-  // a small arrow: a smooth line, straight or bent sideways by `bend`, with an open head
-  function patHandArrow(x0,y0,x1,y1,bend=0){
-    const f=v=>v.toFixed(1),dx=x1-x0,dy=y1-y0,len=Math.hypot(dx,dy)||1,c=[(x0+x1)/2-dy/len*bend,(y0+y1)/2+dx/len*bend];
-    let d='M'+f(x0)+' '+f(y0)+'Q'+f(c[0])+' '+f(c[1])+' '+f(x1)+' '+f(y1);
-    const a=Math.atan2(y1-c[1],x1-c[0]),L=8,hd=da=>[x1-Math.cos(a+da)*L,y1-Math.sin(a+da)*L],q1=hd(.5),q2=hd(-.5);
-    d+='M'+q1[0].toFixed(1)+' '+q1[1].toFixed(1)+'L'+x1.toFixed(1)+' '+y1.toFixed(1)+'L'+q2[0].toFixed(1)+' '+q2[1].toFixed(1);
-    return '<svg class="pb-hand" width="1216" height="698" viewBox="0 0 1216 698" fill="none" stroke="#8d89a8" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+d+'"/></svg>';
-  }
-  // the height of the file's tab; the period filter on it starts where the content starts (88 from the edge) and the tab runs as far again after it
-  const PB_TAB=40,PB_TAB_X=88,PB_GAP=24;
-  // the outline of the file: its tab is as wide as the period filter lying on it; the file fills the whole stage
-  function patBoardDraw(){
-    const stage=document.getElementById('pbStage');if(!stage)return;
-    // the tab is as wide as the longest choice of the filter needs, so it does not change when another period is chosen
-    const btn=document.getElementById('patPeriod');let tabW=btn&&btn.offsetWidth?btn.offsetWidth:90;
-    if(btn){
-      const labels=[...document.querySelectorAll('#patPeriodList [data-period]')].map(b=>b.textContent.trim()),cs=getComputedStyle(btn),probe=document.createElement('span');
-      probe.style.cssText='position:absolute;visibility:hidden;white-space:nowrap;font:'+cs.font;btn.parentNode.appendChild(probe);
-      const widest=Math.max(0,...labels.map(t=>{probe.textContent=t;return probe.offsetWidth;}));probe.remove();
-      if(widest)tabW=Math.max(tabW,widest+(parseFloat(cs.columnGap)||8)+10);
-    }
-    const W=stage.offsetWidth,H=stage.offsetHeight,th=PB_TAB,R=18,rt=Math.min(R,th-6),r=Math.min(16,(th-.5)/1.2);
-    const svg=stage.querySelector('.pb-file');svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.style.width=W+'px';svg.style.height=H+'px';
-    svg.querySelector('path').setAttribute('d',patFolderPath(W,H,th,R,rt,PB_TAB_X+tabW+PB_TAB_X,r));
-  }
-  // The stage is drawn at a design size of at least 1216 x 698 and scaled so that its height (or width) fits the free area; the other side
-  // is stretched, so the file fills the whole width and height. The content keeps 88 from the side edges of the file and 48 from its top edge.
-  // Left column, 48 between the pieces, ending 72 before the middle of the file: the map with its text, the two numbers with their words, and
-  // the repeating thought, which goes over the bottom edge of the file. Right column, from the middle: the most frequent distortion down
-  // to the middle of the file's height, then 48 below it the topics, down to 48 above the bottom edge. The thought sheet goes past the left
-  // edge of the file and the distortion sheet past the right and top ones.
-  function patBoardFit(){
-    const grid=document.getElementById('patGrid'),stage=document.getElementById('pbStage'),meta=document.getElementById('patMeta');
-    if(!grid||!stage)return;
-    const W=grid.clientWidth,H=grid.clientHeight;if(!W||!H)return;
-    const k=Math.max(.78,Math.min(W/1216,H/698)),Wd=W/k,Hd=H/k;
-    stage.style.width=Wd.toFixed(1)+'px';stage.style.height=Hd.toFixed(1)+'px';stage.style.transform='scale('+k.toFixed(4)+')';
-    const qs=sel=>stage.querySelector(sel),at=(el,o)=>{if(el)Object.assign(el.style,o);},px=v=>v.toFixed(1)+'px';
-    const G=48,over=16/k,padL=88,top=PB_TAB+48,mid=Wd/2,c1Max=mid-72;
-    // the tips of the map cells live outside the scaled board, so they take its scale from here (to match the tips of the chips)
-    document.documentElement.style.setProperty('--pb-k',k.toFixed(4));
-    const hmEl=qs('.pt-hm'),when=qs('.pb-when'),th=qs('.pb-thought'),tin=qs('.pb-tin'),tag=qs('.pb-tag'),paper=qs('.pb-paper'),drop=qs('.pb-drop');
-    const textW=el=>{if(!el)return 0;const r=document.createRange();r.selectNodeContents(el);return r.getBoundingClientRect().width/k;};
-    // the lowest piece goes over the bottom edge of the file by half of the space between the file and the bottom of the window
-    const below=Math.max(0,innerHeight-grid.getBoundingClientRect().bottom)/(2*k);
-    // row 3, the lowest: the thought sheet, 48 above and below its text (measured at the widest it can be)
-    let thoughtH=180;
-    if(th&&tin){
-      at(th,{width:Math.round(c1Max+over)+'px'});at(tin,{left:px(padL+over)});
-      const kids=[...tin.children];
-      if(kids.length)thoughtH=Math.ceil(kids[kids.length-1].offsetTop+kids[kids.length-1].offsetHeight-kids[0].offsetTop)+96;
-    }
-    // the rows run from the top with 48 between them. The lowest the thought sheet may reach is over the bottom edge of the file
-    const thoughtTopMin=Hd+below-thoughtH;
-    // row 2: «Снижение тревоги» on the content line, an arrow, then the tag and the paper (the mirror of row 1, where the map comes first
-    // and its text after it). The paper lies 28 lower, over the last 56 of the tag, right after the tag's text. Both are turned a little; their
-    // corners stick out by about 6 and 4. It always stays one line: when it is too wide, the tag and the paper get smaller together
-    // (scaled around the tag's left end, down to 55%). The arrow here is ARROW wide and ends 12 before the tag's tip; the text beside the map stands MAP_GAP from it
-    const tagH=100,papH=92,papOv=4,ARROW=32,MAP_GAP=24;
-    let sG=1,tagOv=6,tagL=padL,tagW=0,papL=0,wl=0,xVo=0;
-    if(tag&&paper){
-      const tagT=Math.max(textW(tag.querySelector('.pb-num')),textW(tag.querySelector('.pb-sub'))),papT=Math.max(textW(paper.querySelector('.pb-num')),textW(paper.querySelector('.pb-sub')));
-      // the tag and the paper are equally wide: wide enough for the paper's own text, and for the paper to cover 56 of the tag after the tag's text
-      wl=drop?drop.offsetWidth:0;xVo=wl*.8;
-      // the arrow from the words starts over the «во» of «тревоги»
-      if(drop){const t=[...drop.querySelector('p').childNodes].find(n=>n.nodeType===3&&n.textContent.includes('во'));if(t){const i=t.textContent.lastIndexOf('во'),r=document.createRange();r.setStart(t,i);r.setEnd(t,i+2);const a=r.getBoundingClientRect(),b=drop.getBoundingClientRect();if(a.width)xVo=(a.left+a.width/2-b.left)/k;}}
-      const papW=Math.round(Math.max(84+tagT+24+56,36+papT+64)),group=84+tagT+24+papW;
-      tagL=padL+xVo-8+ARROW+12;
-      sG=Math.max(.55,Math.min(1,(c1Max-tagL)/group));
-      papL=tagL+84+tagT+24;tagW=papW;
-      // turned around the tag's left end, the far corner of the tag rises a little more
-      if(sG<1)tagOv=tagW*sG*.038;
-      if(paper.dataset.w!==String(papW)){paper.dataset.w=String(papW);paper.style.width=papW+'px';paper.querySelector('.pb-shape').outerHTML=patPaperSVG(papW,papH);const go=paper.querySelector('.pb-go');if(go)go.style.left=(papW-44)+'px';}
-      if(tag.dataset.w!==String(tagW)){tag.dataset.w=String(tagW);tag.querySelector('.pb-shape').outerHTML=patTagSVG(tagW,tagH);}
-    }
-    // the lowest the top of row 2 (its highest drawn point) may be, so that the thought sheet below it still fits
-    // (smaller, the paper turns around the tag's left end too, so its far lower corner drops by about 2.8% of its distance from there)
-    const below2=(28+papH)*sG+(sG<1?(papL-tagL+Number(paper&&paper.dataset.w||0))*sG*.028:papOv),rowTop=thoughtTopMin-G-below2-tagOv;
-    // row 1: the map. Its text (first line «Тревога выше …,», which never breaks) stands MAP_GAP beside the map
-    // and ends 72 before the middle; the map takes all the width left (its cells may be wider than tall) and all the height down to 48 above
-    // row 2. The text stands level with the row that holds the peak
-    let c1R=c1Max,mapH=0;
-    if(hmEl&&when){
-      // the text is as wide as the longest first line any period could give («Тревога выше в воскресенье вечером,»), so neither it nor the map
-      // changes width when another period is chosen
-      let w1=0;const pText=when.querySelector('p'),probe=document.createElement('span');
-      probe.style.cssText='position:absolute;visibility:hidden;white-space:nowrap';pText.appendChild(probe);
-      patA.DAY_IN.forEach(d=>patA.BANDS.forEach(b=>{probe.innerHTML='Тревога выше <mark class="pb-mark">'+d+' '+b.when+',</mark>';w1=Math.max(w1,probe.offsetWidth);}));
-      probe.remove();
-      const hmw=Math.max(24,Math.min(64,(c1Max-MAP_GAP-w1-padL-69)/7)),hmh=Math.max(20,Math.min(46,hmw,(rowTop-G-top-35)/4));
-      hmEl.style.setProperty('--hm',hmh.toFixed(1)+'px');hmEl.style.setProperty('--hmw',hmw.toFixed(1)+'px');hmEl.style.setProperty('--hmh',hmh.toFixed(1)+'px');
-      at(hmEl,{left:px(padL),top:px(top)});
-      const mapR=padL+hmEl.offsetWidth,textL=mapR+MAP_GAP;mapH=hmEl.offsetHeight;
-      at(when,{left:px(textL),width:px(w1),height:'auto'});
-      const p=when.querySelector('p'),cells=hmEl.querySelectorAll('.pt-cell'),row=Number(hmEl.dataset.peakRow);
-      const cell=row>=0?cells[row*7]:null,rowY=cell?top+cell.offsetTop+cell.offsetHeight/2:top+mapH/2;
-      at(when,{top:px(rowY-when.offsetHeight/2)});
-      c1R=textL+w1;
-      // the dashes round an empty cell: a whole number of equal dash-and-gap pairs fits round it, so no dash is longer where the outline closes
-      const er=hmEl.querySelector('.pt-dash rect'),rw=hmw-1.5,rh=hmh-1.5,rr=Math.min(9,rh/2);
-      let per=2*(rw+rh)-8*rr+2*Math.PI*rr;try{if(er&&er.getTotalLength())per=er.getTotalLength();}catch(e){}
-      const unit=per/Math.max(4,Math.round(per/7));
-      hmEl.style.setProperty('--dash',(unit*4/7).toFixed(2)+'px');hmEl.style.setProperty('--gap',(unit*3/7).toFixed(2)+'px');
-    }
-    // row 2 under the map, then the thought sheet under row 2
-    const tagTop=top+mapH+G+tagOv,papTop=tagTop+28,thoughtTop=Math.min(thoughtTopMin,tagTop+below2+G);
-    if(tag&&paper){
-      // smaller: both are scaled around the same point, the tag's top left corner, so they keep their places on each other
-      const small=sG<1,org=(x,y)=>small?x.toFixed(1)+'px '+y.toFixed(1)+'px':'';
-      at(tag,{left:px(tagL),top:px(tagTop),width:tagW+'px',height:tagH+'px',scale:small?sG.toFixed(3):'',transformOrigin:org(0,0)});
-      at(paper,{left:px(papL),top:px(papTop),height:papH+'px',scale:small?sG.toFixed(3):'',transformOrigin:org(tagL-papL,-28)});
-      const dropHand=qs('.pb-hand-drop');
-      if(drop){
-        // the tag is turned, so its left tip sits a little below its middle
-        const tipY=tagTop+(tagH/2+(small?0:tagW*.019))*sG,wordsY=tagTop+tagH*sG,wordsTop=wordsY-drop.offsetHeight/2;
-        at(drop,{left:px(padL),top:px(wordsTop)});
-        // the words stand about level with the lower edge of the tags; the arrow rises from a little left of their «во» towards the tag's tip,
-        // bending to the left, and stops 12 before it
-        if(dropHand)dropHand.outerHTML=patHandArrow(padL+xVo-8,wordsTop-3,tagL-12,tipY,-7).replace('class="pb-hand"','class="pb-hand pb-hand-drop"');
-      }
-    }
-    // the thought sheet runs from past the left edge of the file to the right edge of the text beside the map (a fixed width)
-    if(th&&tin){
-      const wT=Math.round(c1R+over),hT=Math.round(thoughtH);
-      if(th.dataset.size!==wT+'x'+hT){th.dataset.size=wT+'x'+hT;th.querySelector('.pb-shape').outerHTML=patStampSVG(wT,hT);}
-      at(th,{left:px(-over),top:px(thoughtTop),width:wT+'px',height:hT+'px'});
-      // a binder clip holds the sheet to the file at its left edge, half way down; its handles lie folded back over the sheet
-      // (turned a quarter round its middle: the jaw's outer side ends 2 outside the sheet, the handles stop well before the text)
-      at(th.querySelector('.pb-binder'),{left:'2.55px',top:px(hT/2-42.25)});
-    }
-    // the right column: the distortion sheet goes over the top edge of the file (as the sheets go over its sides) and ends exactly
-    // in the middle of the file's height, the tab not counted; 48 below it the topics, down to 48 above the bottom edge
-    const fr=qs('.pb-freq'),donut=qs('.pb-donut');
-    if(fr){
-      const midY=(PB_TAB+Hd)/2,wF=Math.round(Wd+over-mid);
-      fr.style.width=wF+'px';
-      const fin=fr.querySelector('.pb-fin'),chips=fr.querySelector('.pb-chips');
-      // inside the sheet the text keeps the same space on the left and on the right; on the right that is as far from the edge of the file
-      // as the map and the thought keep from its left edge
-      at(fin,{left:px(padL+over),right:px(padL+over)});at(chips,{left:px(padL+over),right:px(padL+over)});
-      // 48 above the text and 48 below the chips. A long text first lifts the top of the sheet further over the edge of the file (no higher
-      // than 4 below the top of the tab), then the space above and below shrinks (down to 24); only then the sheet gets longer than the middle
-      const body=(fin?fin.offsetHeight:0)+(chips?12+chips.offsetHeight:0);
-      const fTop=Math.max(4,Math.min(PB_TAB-14,midY-body-96)),pad=Math.max(24,Math.min(48,(midY-fTop-body)/2));
-      const hF=Math.round(Math.max(midY-fTop,body+2*pad));
-      at(fin,{top:px(pad)});at(chips,{bottom:px(pad)});
-      // a chip's tip always opens from the chip's left edge; near the right edge of the sheet it gets narrower (down to 240) so it stays on the sheet
-      if(chips)chips.querySelectorAll('.pt-chip').forEach(ch=>{const t=ch.querySelector('.pt-tip');if(t)t.style.width=Math.round(Math.max(240,Math.min(340,wF-chips.offsetLeft-ch.offsetLeft)))+'px';});
-      if(fr.dataset.size!==wF+'x'+hF){fr.dataset.size=wF+'x'+hF;fr.querySelector('.pb-shape').outerHTML=patSheetSVG(wF,hF,null,0);fr.querySelectorAll('.pb-clip').forEach(cl=>{cl.style.left=(wF-88)+'px';});}
-      at(fr,{left:px(mid),top:px(fTop),height:hF+'px'});
-      if(donut){
-        // the topics: what is drawn (the ring with its labels) starts 48 below the distortion sheet, ends 48 above the bottom edge and is centred
-        // between the middle and the right edge of the file; the ring gets as big as that room allows. The chart is scaled, so the sizes of its
-        // labels (15, as the main text), of the number (28, as the percentages) and of the caption under it (11) are set back in its own units
-        const dT=fTop+hF+G,dW=Wd-mid,dH=Math.max(120,Hd-48-dT),chart=donut.querySelector('.pat-topic-chart');
-        at(donut,{left:px(mid),top:px(dT),width:px(dW),height:px(dH)});
-        if(chart){
-          const m=Math.min(470/460,214/210),ox=(470-460*m)/2,labels=chart.querySelector('.pat-topic-labels');
-          const sizes=s=>{const u=v=>(v/(s*m)).toFixed(2)+'px';chart.style.setProperty('--pb-tl',u(15));chart.style.setProperty('--pb-cap',u(11));chart.style.setProperty('--pb-tot',u(28));};
-          // a fixed box in the svg's own units: the ring with its stroke (radius 80 around 210,105) and room for labels on both sides,
-          // so the ring has the same size for every period whatever its labels
-          const box=()=>({x0:-20,y0:6,x1:440,y1:206});
-          const fit=b=>Math.min(1.8,(dW-48)/((b.x1-b.x0)*m),dH/((b.y1-b.y0)*m));
-          let s=Number(chart.dataset.s)||1;
-          for(let i=0;i<3;i++){sizes(s);s=fit(box());}
-          sizes(s);chart.dataset.s=String(s);
-          const b=box(),cx=((b.x0+b.x1)/2+20)*m+ox;
-          chart.style.transform='translate('+px(dW/2-s*cx)+','+px(dH-s*b.y1*m)+') scale('+s.toFixed(3)+')';
-        }
-      }
-    }
-    // the filter sits 8 lower than the middle of the tab
-    if(meta)meta.style.transform='translate('+(PB_TAB_X*k).toFixed(1)+'px,'+(8*k).toFixed(1)+'px) scale('+k.toFixed(4)+')';
-    patBoardDraw();
-  }
-  let patBoardObserver=null;
-  function patBoardWatch(){
-    if(!patBoardObserver&&window.ResizeObserver)patBoardObserver=new ResizeObserver(patBoardFit);
-    if(patBoardObserver){patBoardObserver.disconnect();patBoardObserver.observe(document.getElementById('patGrid'));}
-    patBoardFit();
-    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(patBoardFit);
+  let patNotesObserver=null;
+  function patNotesWatch(){
+    if(!patNotesObserver&&window.ResizeObserver)patNotesObserver=new ResizeObserver(patNotesFit);
+    if(patNotesObserver){patNotesObserver.disconnect();patNotesObserver.observe(document.getElementById('patGrid'));}
+    patNotesFit();
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(patNotesFit);
   }
 
   // hides trailing rows that do not fit, so cards never scroll or clip a half row
@@ -6496,8 +6247,8 @@
     intro.classList.add('hidden');intro.replaceChildren();
   }
 
-  // The front moves away to reveal a stationary filing tray. The dashboard enters
-  // only once the entire archive is invisible: no overlaid labels or stretched sheets.
+  // The archive opens; then it sinks a little and fades, and the board fades in where it stands. The board comes in as one layer (its file
+  // and every piece on it together), so no line of the file ever shows through a half-transparent piece.
   function patPlayIntro(){
     patCancelIntro();if(reducedMotion())return;
     const area=document.getElementById('patterns'),intro=document.getElementById('patIntro'),meta=document.getElementById('patMeta');
@@ -6515,11 +6266,13 @@
     A(cab,[{opacity:0},{opacity:1}],{duration:420,fill:'both'});
     A(front,[{transform:'translateY('+(-travel)+'px)'},{transform:'none'}],{delay:550,duration:1600,easing:ease,fill:'both'});
     A(inside,[{clipPath:'inset(0 0 '+L.H+'px 0)'},{clipPath:'inset(0 0 '+(L.frontH-2.4)+'px 0)'}],{delay:550,duration:1600,easing:ease,fill:'both'});
-    A(cab,[{opacity:1,translate:'0 0'},{opacity:0,translate:'0 20px'}],{delay:2850,duration:550,easing:ease,fill:'forwards'});
-    cards.forEach((card,i)=>A(card,[{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{delay:3450+i*55,duration:650,easing:ease,fill:'backwards'}));
-    const fileEl=document.querySelector('#patGrid .pb-file');if(fileEl)A(fileEl,[{opacity:0},{opacity:1}],{delay:3450,duration:650,easing:ease,fill:'backwards'});
-    A(meta,[{opacity:0},{opacity:1}],{delay:3450,duration:500,fill:'backwards'});
-    setTimeout(()=>{if(tok===patIntroTok)patCancelIntro();},4450);
+    // one after the other, with soft starts and ends: the board begins to show only when the archive is all but gone, so it is never seen through the file
+    const grid=document.getElementById('patGrid'),soft='cubic-bezier(.45,0,.55,1)',rise='cubic-bezier(.25,0,.2,1)',tOut=2650,out=650,tBoard=tOut+out-50,inn=900;
+    A(cab,[{opacity:1,translate:'0 0'},{opacity:0,translate:'0 14px'}],{delay:tOut,duration:out,easing:soft,fill:'forwards'});
+    // the page comes in as one piece: the filters and everything under them only fade in, together, nothing moves
+    A(grid,[{opacity:0},{opacity:1}],{delay:tBoard,duration:inn,easing:rise,fill:'backwards'});
+    A(meta,[{opacity:0},{opacity:1}],{delay:tBoard,duration:inn,easing:rise,fill:'backwards'});
+    setTimeout(()=>{if(tok===patIntroTok)patCancelIntro();},tBoard+inn+100);
   }
 
   // ---- empty state ----
@@ -6539,21 +6292,21 @@
       patState=patA.computePatterns(src.entries,id=>getTopicMeta(id).name);
       if(patState.enough){
         empty.classList.add('hidden');dash.classList.remove('hidden');
-        document.getElementById('patterns').classList.add('has-board');
+        document.getElementById('patterns').classList.add('has-notes');
         patRenderDash(patState,src);
         requestAnimationFrame(()=>{if(document.getElementById('patterns').classList.contains('hidden'))return;patDrawTrend();patFit();if(animate)patPlayIntro();});
         return;
       }
     }
-    patState=null;dash.classList.add('hidden');empty.classList.remove('hidden');document.getElementById('patterns').classList.remove('has-board');document.getElementById('patMeta').style.transform='';patRenderEmpty(src);
+    patState=null;dash.classList.add('hidden');empty.classList.remove('hidden');document.getElementById('patterns').classList.remove('has-notes');document.getElementById('patMeta').style.marginTop='';patRenderEmpty(src);
   }
   function patLeave(){document.getElementById('patDetails').close();patCancelIntro();if(patResizeObserver){patResizeObserver.disconnect();patResizeObserver=null;}}
 
   document.getElementById('patGrid').addEventListener('click',e=>{
     const detail=e.target.closest('[data-detail]');if(detail){patOpenDetails(detail.dataset.detail);return;}
     const time=e.target.closest('[data-time]');if(time){patOpenDetails('time',time.dataset.time);return;}
-    const chip=e.target.closest('.pat-chip,.pt-go,.pb-go,.pb-paper[data-ref]');
-    if(chip&&patRefs[+chip.dataset.ref])openHistoryEntry(patRefs[+chip.dataset.ref]);
+    const chip=e.target.closest('.pat-chip,.pt-go,.pn-best');
+    if(chip&&patRefs[+chip.dataset.ref]){openHistoryEntry(patRefs[+chip.dataset.ref]);readerReturn='patterns';}
   });
   document.querySelectorAll('[data-pat-page]').forEach(b=>b.addEventListener('click',()=>patSetPage(Number(b.dataset.patPage))));
   document.getElementById('patDetailClose').addEventListener('click',()=>document.getElementById('patDetails').close());
@@ -6577,8 +6330,10 @@
   }
 
   // ============ VIEW SWITCHING (Разбор / История) ============
-  function showView(view){
-    stopBreathing();stopActiveRecognition();saveDraft();
+  function showView(view,opts={}){
+    stopBreathing();stopActiveRecognition();saveDraft();readerReturn=null;
+    // the search belongs to «История»: going to another tab clears it and folds the field
+    if(view!=='history'&&searchInput.value){searchInput.value='';headerSearch.classList.remove('has-value');searchInput.blur();document.getElementById('searchResults').classList.add('hidden');document.getElementById('booksGrid').classList.remove('hidden');}
     if(view!=='history'&&document.getElementById('readerSection').classList.contains('visible')){
       bookAnimToken++;cleanupReaderMotion();afterBusy.length=0;readerRefitQueued=false;
       bookBusy=false;document.getElementById('readerSection').classList.remove('visible');document.getElementById('booksGrid').classList.remove('hidden');
@@ -6596,7 +6351,7 @@
     document.body.dataset.view=view;
     document.getElementById('navPatterns').classList.toggle('active', view==='patterns');
     document.getElementById('navPatterns').setAttribute('aria-current',view==='patterns'?'page':'false');
-    if(view==='patterns')patShow();else patLeave();
+    if(view==='patterns')patShow(opts.intro!==false);else patLeave();
     if(view==='history'){renderHistory();runSearch();}
     window.scrollTo({top:0, behavior:motionBehavior()});
   }
