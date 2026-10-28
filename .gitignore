@@ -1,0 +1,9 @@
+# Only the service itself is published: the page and its font.
+# Backups, ideas, notes, tests and the local server stay on this computer.
+/*
+!/.gitignore
+!/index.html
+!/fonts/
+/fonts/*
+!/fonts/nunito-variable.ttf
+!/fonts/nunito-OFL.txt
