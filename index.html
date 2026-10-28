@@ -1860,7 +1860,8 @@
   #patterns #patEmpty .pat-empty-copy h2{font:500 24px/1.3 var(--font-body);letter-spacing:0;text-transform:none;color:#111;}
   .pat-empty-copy p{margin:0;font:400 15px/1.6 var(--font-body);color:#606060;}
   .pat-empty-copy>svg{width:44px;height:44px;margin-bottom:8px;color:#b0b0b0;flex:none;}
-  .pat-empty-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 20px;margin-top:4px;}
+  /* the button stands 32 under the text (16 of the column's gap + 16) so it does not stick to it */
+  .pat-empty-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 20px;margin-top:16px;}
   /* the same size as «Новый разбор» on the screen that closes a разбор */
   #patEmpty .pat-start{margin:0;box-sizing:border-box;height:60px;min-height:60px;padding:0 28px;background:#000;color:#fff;border:1.5px solid #000;border-radius:30px;font:500 15px/1.4 var(--font-body);letter-spacing:0;}
   #patEmpty .pat-start:hover{background:#222;color:#fff;}
@@ -2681,7 +2682,8 @@
   .pat-filter:hover{color:#3f3f3f;}
   .pat-filter[aria-pressed="true"]{color:#111;cursor:default;background:rgba(255,255,255,.5);box-shadow:0 1px 2px rgba(64,52,128,.04),0 2px 8px rgba(64,52,128,.05)!important;backdrop-filter:blur(14px) saturate(1.15)!important;-webkit-backdrop-filter:blur(14px) saturate(1.15)!important;}
   .pat-filter:focus-visible{outline:2px solid #444;outline-offset:4px;border-radius:2px;}
-  body[data-view="patterns"] #patterns.has-notes #patMeta{display:flex;align-items:center;min-height:0;margin:0 0 20px;}
+  /* the filters sit the same with the findings and when empty, so the empty state is centred in the same area the findings fill */
+  body[data-view="patterns"] #patterns #patMeta{display:flex;align-items:center;min-height:0;margin:0 0 20px;}
   body[data-view="patterns"] #patterns.has-notes #patMeta .pat-toolbar-actions{display:none;}
   body[data-view="patterns"] #patterns.has-notes #patGrid.pat-grid{display:block;flex:1;min-height:0;position:relative;}
   .pn{height:100%;display:flex;flex-direction:column;}
@@ -3070,8 +3072,8 @@
   <div class="pat-meta" id="patMeta"></div>
   <div id="patEmpty" class="hidden">
     <div class="pat-empty-copy">
-      <!-- a pulse line, not the box of «Мои данные»; 18 units tall like the other empty-state icons -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <!-- a calendar, not the box of «Мои данные»; 18 units tall like the other empty-state icons -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <h2>Паттерны формируются</h2>
       <p id="patEmptyText"></p>
       <div class="pat-empty-actions">
@@ -4306,7 +4308,7 @@
 
     if(visibleTopics.length === 0){
       // the book is drawn 18 units tall (3–21), like the magnifier of the empty search and the icon of the empty Patterns, so all three read the same size
-      grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H19"/><path d="M7.5 3H19v18H7.5A2.5 2.5 0 0 1 5 18.5v-13A2.5 2.5 0 0 1 7.5 3z"/></svg><span>Пока нет разборов</span>Заверши разбор, и он появится в истории.</div>';
+      grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H19"/><path d="M7.5 3H19v18H7.5A2.5 2.5 0 0 1 5 18.5v-13A2.5 2.5 0 0 1 7.5 3z"/></svg><span>Пока нет разборов</span>Заверши разбор, и он появится в истории</div>';
       return;
     }
 
@@ -6136,14 +6138,20 @@
 
   // The map stands at the bottom of its card (34 cells). A thought that does not fit in its card is left out (the last first), so the card
   // never scrolls or cuts a line.
+  // the filters stand 20 under the logo (with its tagline), with the findings and when empty alike; the header's height is not a whole
+  // number, so the step is set here
+  function patPlaceMeta(){
+    const logo=document.getElementById('logoHome'),meta=document.getElementById('patMeta');
+    if(!logo||!meta||document.getElementById('patterns').classList.contains('hidden'))return;
+    meta.style.marginTop='0px';meta.style.marginTop=(logo.getBoundingClientRect().bottom+20-meta.getBoundingClientRect().top).toFixed(2)+'px';
+  }
+  addEventListener('resize',()=>{const p=document.getElementById('patterns');if(!p.classList.contains('hidden')&&!p.classList.contains('has-notes'))patPlaceMeta();});
   function patNotesFit(){
     const grid=document.getElementById('patGrid'),card=grid.querySelector('.pn-time'),hm=card&&card.querySelector('.pt-hm'),when=card&&card.querySelector('.pn-when');
     if(!hm||!card.clientHeight)return;
     const title=grid.querySelector('.pn-title');
     if(title){title.style.fontSize='';const widest=Math.max(...[...title.children].map(l=>l.scrollWidth));if(widest>title.clientWidth)title.style.fontSize=(parseFloat(getComputedStyle(title).fontSize)*title.clientWidth/widest).toFixed(1)+'px';}
-    // the filters stand 20 under the logo (with its tagline); the header's height is not a whole number, so the step is set here
-    const logo=document.getElementById('logoHome'),meta=document.getElementById('patMeta');
-    if(logo&&meta){meta.style.marginTop='0px';meta.style.marginTop=(logo.getBoundingClientRect().bottom+20-meta.getBoundingClientRect().top).toFixed(2)+'px';}
+    patPlaceMeta();
     const w=34,h=34;
     // the dashes round an empty cell: a whole number of equal dash-and-gap pairs fits round it, so no dash is longer where the outline closes
     const er=hm.querySelector('.pt-dash rect'),rw=w-1.5,rh=h-1.5,rr=Math.min(9,rh/2);
@@ -6275,7 +6283,8 @@
 
   // ---- empty state ----
   function patRenderEmpty(src){
-    document.getElementById('patEmptyText').textContent='За выбранный период добавлено '+src.all+' из '+patA.MIN_ENTRIES+' разборов. Добавь новые записи или выбери другой период.';
+    // two lines, no periods at the ends, like the other empty states
+    document.getElementById('patEmptyText').replaceChildren('За выбранный период добавлено '+src.all+' из '+patA.MIN_ENTRIES+' разборов',document.createElement('br'),'Добавь новые записи или выбери другой период');
   }
 
   function patShow(animate=true){
@@ -6293,7 +6302,7 @@
         return;
       }
     }
-    patState=null;dash.classList.add('hidden');empty.classList.remove('hidden');document.getElementById('patterns').classList.remove('has-notes');document.getElementById('patMeta').style.marginTop='';patRenderEmpty(src);
+    patState=null;dash.classList.add('hidden');empty.classList.remove('hidden');document.getElementById('patterns').classList.remove('has-notes');patRenderEmpty(src);requestAnimationFrame(patPlaceMeta);
   }
   function patLeave(){document.getElementById('patDetails').close();patCancelIntro();if(patResizeObserver){patResizeObserver.disconnect();patResizeObserver=null;}}
 
