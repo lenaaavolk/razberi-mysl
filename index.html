@@ -3279,29 +3279,36 @@
     handle.addEventListener('click',()=>{if(!suppressClick)peelSticker();});
   }
 
+  // A hint under the mouse waits this long before it shows, so hints do not flicker while the cursor passes over things.
+  // Only hovering waits: a hint for keyboard focus, and a message that answers a click, show at once.
+  const HINT_DELAY=3000;
+
   // short cursor hint for icon-only buttons marked with data-hint
   const iconHint=document.getElementById('iconHint');
+  let iconHintWait=null;
   function placeIconHint(x,y){
     const w=iconHint.offsetWidth,h=iconHint.offsetHeight,pad=12;
     iconHint.style.transform='translate('+Math.min(Math.max(pad,x+16+w>innerWidth-pad?x-16-w:x+16),innerWidth-w-pad)+'px,'+Math.min(Math.max(pad,y+22),innerHeight-h-pad)+'px)';
   }
   function bindIconHint(el){
     const show=(x,y)=>{iconHint.textContent=el.dataset.hint;iconHint.classList.remove('is-message');iconHint.classList.add('visible');placeIconHint(x,y);};
-    el.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')show(e.clientX,e.clientY);});
-    el.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&iconHint.classList.contains('visible')){iconHint.textContent=el.dataset.hint;placeIconHint(e.clientX,e.clientY);}});
-    el.addEventListener('pointerleave',()=>{if(!iconHint.classList.contains('is-message'))iconHint.classList.remove('visible');});
+    let at=[0,0];
+    const hide=()=>{clearTimeout(iconHintWait);if(!iconHint.classList.contains('is-message'))iconHint.classList.remove('visible');};
+    el.addEventListener('pointerenter',e=>{if(e.pointerType!=='mouse')return;at=[e.clientX,e.clientY];clearTimeout(iconHintWait);iconHintWait=setTimeout(()=>{if(!iconHint.classList.contains('is-message'))show(...at);},HINT_DELAY);});
+    el.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;at=[e.clientX,e.clientY];if(iconHint.classList.contains('visible')&&!iconHint.classList.contains('is-message')){iconHint.textContent=el.dataset.hint;placeIconHint(...at);}});
+    el.addEventListener('pointerleave',hide);
     el.addEventListener('focus',()=>{if(el.matches(':focus-visible')){const r=el.getBoundingClientRect();show(r.left,r.bottom-8);}});
-    el.addEventListener('blur',()=>{if(!iconHint.classList.contains('is-message'))iconHint.classList.remove('visible');});
-    el.addEventListener('click',()=>iconHint.classList.remove('visible','is-message'));
+    el.addEventListener('blur',hide);
+    el.addEventListener('click',()=>{clearTimeout(iconHintWait);iconHint.classList.remove('visible','is-message');});
   }
   document.querySelectorAll('[data-hint]').forEach(bindIconHint);
 
   // "Далее" stays inactive until the sticker has some text; a hint next to the cursor explains why.
   const nextHint=document.getElementById('nextHint');
   const nextButtons=[...document.querySelectorAll('.continue-btn[data-check]')];
-  let nextHintOwner=null,nextHintTimer;
+  let nextHintOwner=null,nextHintTimer,nextHintWait,nextHintAt=[0,0];
   const isNextOff=btn=>btn.getAttribute('aria-disabled')==='true';
-  function hideNextHint(){clearTimeout(nextHintTimer);nextHintOwner=null;nextHint.classList.remove('visible');}
+  function hideNextHint(){clearTimeout(nextHintTimer);clearTimeout(nextHintWait);nextHintOwner=null;nextHint.classList.remove('visible');}
   function placeNextHint(left,top){
     const pad=12,w=nextHint.offsetWidth,h=nextHint.offsetHeight;
     nextHint.style.transform='translate('+Math.min(Math.max(pad,left),innerWidth-w-pad)+'px,'+Math.min(Math.max(pad,top),innerHeight-h-pad)+'px)';
@@ -3312,7 +3319,7 @@
     placeNextHint(x+16+w>innerWidth-12?x-16-w:x+16,y+22+h>innerHeight-12?y-14-h:y+22);
   }
   function showNextHintAboveButton(btn,ms){
-    clearTimeout(nextHintTimer);nextHint.classList.add('visible');
+    clearTimeout(nextHintTimer);clearTimeout(nextHintWait);nextHint.classList.add('visible');
     const r=btn.getBoundingClientRect();
     placeNextHint(r.right-nextHint.offsetWidth,r.top-nextHint.offsetHeight-10);
     if(ms)nextHintTimer=setTimeout(hideNextHint,ms);
@@ -3325,8 +3332,8 @@
     if(nextHintOwner&&!isNextOff(nextHintOwner))hideNextHint();
   }
   nextButtons.forEach(btn=>{
-    btn.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&isNextOff(btn)){nextHintOwner=btn;showNextHintAtCursor(e.clientX,e.clientY);}});
-    btn.addEventListener('pointermove',e=>{if(nextHintOwner===btn&&e.pointerType==='mouse')showNextHintAtCursor(e.clientX,e.clientY);});
+    btn.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&isNextOff(btn)){nextHintOwner=btn;nextHintAt=[e.clientX,e.clientY];clearTimeout(nextHintWait);nextHintWait=setTimeout(()=>{if(nextHintOwner===btn&&isNextOff(btn))showNextHintAtCursor(...nextHintAt);},HINT_DELAY);}});
+    btn.addEventListener('pointermove',e=>{if(nextHintOwner!==btn||e.pointerType!=='mouse')return;nextHintAt=[e.clientX,e.clientY];if(nextHint.classList.contains('visible'))showNextHintAtCursor(...nextHintAt);});
     btn.addEventListener('pointerleave',()=>{if(nextHintOwner===btn)hideNextHint();});
     btn.addEventListener('focus',()=>{if(isNextOff(btn)&&btn.matches(':focus-visible')){nextHintOwner=btn;showNextHintAboveButton(btn);}});
     btn.addEventListener('blur',()=>{if(nextHintOwner===btn)hideNextHint();});
@@ -5205,7 +5212,9 @@
     const b=document.getElementById('flipStage').getBoundingClientRect();
     return !!spreadInfo(currentReaderPage)&&x>=b.left&&y>=b.top&&x<=b.left+Math.min(300,b.width*.3)&&y<=b.top+Math.min(100,b.height*.16);
   }
-  function hideBookPointerHint(){pointerHint?.classList.remove('visible');}
+  // the hint waits HINT_DELAY over one action (Вперёд, Назад, Закрыть…) before it shows; moving onto another action starts the wait again
+  let hintShown=null,hintWaiting=null,hintWait=null;
+  function hideBookPointerHint(){clearTimeout(hintWait);hintShown=hintWaiting=null;pointerHint?.classList.remove('visible');}
   function pointerBookAction(target,x,y){
     if(bookBusy||!document.getElementById('readerSection').classList.contains('visible')||document.getElementById('history').classList.contains('hidden'))return null;
     if(target.closest('header,dialog,button:not(.toc-row),a,input,textarea,.book-wrap,[role="button"]'))return null;
@@ -5230,6 +5239,11 @@
     const {x,y}=hintPointer,target=document.elementFromPoint(x,y);
     const action=target&&(pointerBookAction(target,x,y)||pointerStickerAction(target));
     if(!action){hideBookPointerHint();return;}
+    if(action.label!==hintShown){
+      if(hintShown!==null){hintShown=null;pointerHint.classList.remove('visible');}
+      if(action.label!==hintWaiting){clearTimeout(hintWait);hintWaiting=action.label;hintWait=setTimeout(()=>{hintShown=hintWaiting;refreshPointerHint();},HINT_DELAY);}
+      return;
+    }
     pointerHint.querySelector('.hint-icon').innerHTML=HINT_ICONS[action.icon]||'';
     pointerHint.querySelector('.hint-label').textContent=action.label;
     const width=pointerHint.offsetWidth,height=pointerHint.offsetHeight;
