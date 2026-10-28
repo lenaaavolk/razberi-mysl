@@ -6302,7 +6302,9 @@
         return;
       }
     }
-    patState=null;dash.classList.add('hidden');empty.classList.remove('hidden');document.getElementById('patterns').classList.remove('has-notes');patRenderEmpty(src);requestAnimationFrame(patPlaceMeta);
+    patState=null;dash.classList.add('hidden');empty.classList.remove('hidden');document.getElementById('patterns').classList.remove('has-notes');patRenderEmpty(src);
+    // right away (a page in a background tab gets no frames until it is shown), and once more after the layout settles
+    patPlaceMeta();requestAnimationFrame(patPlaceMeta);
   }
   function patLeave(){document.getElementById('patDetails').close();patCancelIntro();if(patResizeObserver){patResizeObserver.disconnect();patResizeObserver=null;}}
 
