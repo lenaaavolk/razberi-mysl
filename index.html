@@ -6283,8 +6283,8 @@
 
   // ---- empty state ----
   function patRenderEmpty(src){
-    // two lines, no periods at the ends, like the other empty states
-    document.getElementById('patEmptyText').replaceChildren('За выбранный период добавлено '+src.all+' из '+patA.MIN_ENTRIES+' разборов',document.createElement('br'),'Добавь новые записи или выбери другой период');
+    // two sentences on two lines: a period between them, none at the very end, like the other empty states
+    document.getElementById('patEmptyText').replaceChildren('За выбранный период добавлено '+src.all+' из '+patA.MIN_ENTRIES+' разборов.',document.createElement('br'),'Добавь новые записи или выбери другой период');
   }
 
   function patShow(animate=true){
