@@ -1860,12 +1860,9 @@
   #patterns #patEmpty .pat-empty-copy h2{font:500 24px/1.3 var(--font-body);letter-spacing:0;text-transform:none;color:#111;}
   .pat-empty-copy p{margin:0;font:400 15px/1.6 var(--font-body);color:#606060;}
   .pat-empty-copy>svg{width:44px;height:44px;margin-bottom:8px;color:#b0b0b0;flex:none;}
-  .pat-progress{display:flex;align-items:center;gap:10px;font:400 13px/1 var(--font-body);color:#8a8a8a;}
-  .pat-progress span{display:flex;gap:6px;}
-  .pat-progress i{display:block;width:16px;height:16px;box-sizing:border-box;border:1.5px solid #111;}
-  .pat-progress i.on{background:#111;}
   .pat-empty-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 20px;margin-top:4px;}
-  #patEmpty .pat-start{margin:0;min-height:48px;padding:0 28px;background:#000;color:#fff;border:1.5px solid #000;border-radius:30px;font:500 15px/1.4 var(--font-body);letter-spacing:0;}
+  /* the same size as «Новый разбор» on the screen that closes a разбор */
+  #patEmpty .pat-start{margin:0;box-sizing:border-box;height:60px;min-height:60px;padding:0 28px;background:#000;color:#fff;border:1.5px solid #000;border-radius:30px;font:500 15px/1.4 var(--font-body);letter-spacing:0;}
   #patEmpty .pat-start:hover{background:#222;color:#fff;}
   .pat-link{border:0;background:none;padding:6px 2px;font:400 14px/1.4 var(--font-body);color:#606060;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
   .pat-link:hover{color:#111;}
@@ -2378,7 +2375,7 @@
   body[data-view="patterns"] #patPeriodList button:hover,body[data-view="patterns"] #patPeriodList button:focus-visible{background:var(--ui-tint)!important;}
   body[data-view="patterns"] #patPeriodList [aria-selected="true"]:hover,body[data-view="patterns"] #patPeriodList [aria-selected="true"]:focus-visible{background:var(--ui-tint-2)!important;}
   body[data-view="patterns"] .pat-replay{color:var(--ui-ink-2)!important;}
-  body[data-view="patterns"] #patEmpty :is(p,.pat-progress,.pat-link){color:var(--ui-ink-2)!important;}
+  body[data-view="patterns"] #patEmpty :is(p,.pat-link){color:var(--ui-ink-2)!important;}
   body[data-view="patterns"] .pat-map-cell{background:var(--cell,#f7ecd9)!important;}
   /* the drawer: see-through front and handle; the files and the walls stop at its edge, so nothing shows through it */
   body[data-view="patterns"] .cab-front .ff{fill:rgba(255,255,255,.14);}
@@ -3073,12 +3070,12 @@
   <div class="pat-meta" id="patMeta"></div>
   <div id="patEmpty" class="hidden">
     <div class="pat-empty-copy">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-      <h2>Картотека собирается</h2>
+      <!-- a pulse line, not the box of «Мои данные»; 18 units tall like the other empty-state icons -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <h2>Паттерны формируются</h2>
       <p id="patEmptyText"></p>
-      <div class="pat-progress" id="patProgress" role="img"></div>
       <div class="pat-empty-actions">
-        <button type="button" class="continue-btn pat-start" id="patStart">Сделать разбор</button>
+        <button type="button" class="continue-btn pat-start" id="patStart">Новый разбор</button>
       </div>
     </div>
   </div>
@@ -4308,7 +4305,8 @@
     const visibleTopics = TOPICS.filter(t => groups[t.id] && groups[t.id].length > 0 && (activeTopicFilter==='all' || activeTopicFilter===t.id));
 
     if(visibleTopics.length === 0){
-      grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Здесь пока пусто</span>Заверши первый разбор — он появится в соответствующей теме.</div>';
+      // the book is drawn 18 units tall (3–21), like the magnifier of the empty search and the icon of the empty Patterns, so all three read the same size
+      grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H19"/><path d="M7.5 3H19v18H7.5A2.5 2.5 0 0 1 5 18.5v-13A2.5 2.5 0 0 1 7.5 3z"/></svg><span>Пока нет разборов</span>Заверши разбор, и он появится в истории.</div>';
       return;
     }
 
@@ -6277,10 +6275,7 @@
 
   // ---- empty state ----
   function patRenderEmpty(src){
-    const need=patA.MIN_ENTRIES,have=Math.min(src.all,need);
-    document.getElementById('patProgress').innerHTML='<span>'+Array.from({length:need},(_,i)=>'<i class="'+(i<have?'on':'')+'"></i>').join('')+'</span>'+have+' из '+need;
-    document.getElementById('patProgress').setAttribute('aria-label','Разборов собрано: '+have+' из '+need);
-    document.getElementById('patEmptyText').textContent='За выбранный период '+src.all+' из '+need+' нужных разборов. Выбери более длинный период или добавь новые записи.';
+    document.getElementById('patEmptyText').textContent='За выбранный период добавлено '+src.all+' из '+patA.MIN_ENTRIES+' разборов. Добавь новые записи или выбери другой период.';
   }
 
   function patShow(animate=true){
